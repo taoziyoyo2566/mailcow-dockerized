@@ -1007,7 +1007,7 @@ function mailbox($_action, $_type, $_data = null, $_extra = null) {
             );
             return false;
           }
-          if (in_array($_data['authsource'], array('mailcow', 'keycloak', 'generic-oidc'))){
+          if (in_array($_data['authsource'], array('mailcow', 'keycloak', 'generic-oidc', 'ldap'))){
             $authsource = $_data['authsource'];
           }
           $password     = $_data['password'];
@@ -2920,7 +2920,7 @@ function mailbox($_action, $_type, $_data = null, $_extra = null) {
               $tags           = (is_array($_data['tags']) ? $_data['tags'] : array());
               $attribute_hash = (!empty($_data['attribute_hash'])) ? $_data['attribute_hash'] : '';
               $authsource     = $is_now['authsource'];
-              if (in_array($_data['authsource'], array('mailcow', 'keycloak', 'generic-oidc'))){
+              if (in_array($_data['authsource'], array('mailcow', 'keycloak', 'generic-oidc', 'ldap'))){
                 $authsource = $_data['authsource'];
               }
             }

@@ -37,6 +37,9 @@
                           {% if iam_settings.authsource == 'generic-oidc' %}
                           <option value="generic-oidc" {% if result.authsource == "generic-oidc" %}selected{% endif %}>Generic-OIDC</option>
                           {% endif %}
+                          {% if iam_settings.authsource == 'ldap' %}
+                          <option value="ldap" {% if result.authsource == "ldap" %}selected{% endif %}>LDAP</option>
+                          {% endif %}
                       </select>
                     </div>
                   </div>

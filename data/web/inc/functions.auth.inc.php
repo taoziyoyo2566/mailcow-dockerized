@@ -175,11 +175,14 @@ function user_login($user, $pass, $extra = null){
   $stmt->execute(array(':user' => $user));
   $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-  // user does not exist, try call keycloak login and create user if possible via rest flow
+  // user does not exist, try call idp login and create user if possible via rest flow
   if (!$row){
     $iam_settings = identity_provider('get');
     if ($iam_settings['authsource'] == 'keycloak' && intval($iam_settings['mailpassword_flow']) == 1){
       $result = keycloak_mbox_login_rest($user, $pass, $iam_settings, array('is_internal' => $is_internal, 'create' => true));
+      if ($result !== false) return $result;
+    } else if ($iam_settings['authsource'] == 'ldap') {
+      $result = ldap_mbox_login($user, $pass, $iam_settings, array('is_internal' => $is_internal, 'create' => true));
       if ($result !== false) return $result;
     }
   } 
@@ -187,50 +190,59 @@ function user_login($user, $pass, $extra = null){
     return false;
   }
 
-  if ($row['authsource'] == 'keycloak'){
-    // user authsource is keycloak, try using via rest flow
-    $iam_settings = identity_provider('get');
-    if (intval($iam_settings['mailpassword_flow']) == 1){
-      $result = keycloak_mbox_login_rest($user, $pass, $iam_settings, array('is_internal' => $is_internal));
+  switch ($row['authsource']) {
+    case 'keycloak':
+      // user authsource is keycloak, try using via rest flow
+      $iam_settings = identity_provider('get');
+      if (intval($iam_settings['mailpassword_flow']) == 1){
+        $result = keycloak_mbox_login_rest($user, $pass, $iam_settings, array('is_internal' => $is_internal));
+        return $result;
+      } else {
+        return false;
+      }
+    break;
+    case 'ldap':
+      // user authsource is ldap, try using via rest flow
+      $iam_settings = identity_provider('get');
+      $result = ldap_mbox_login($user, $pass, $iam_settings, array('is_internal' => $is_internal));
       return $result;
-    } else {
-      return false;
-    }
+    break;
+    default:
+      // verify password
+      if (verify_hash($row['password'], $pass) !== false) {
+        // check for tfa authenticators
+        $authenticators = get_tfa($user);
+        if (isset($authenticators['additional']) && is_array($authenticators['additional']) && count($authenticators['additional']) > 0 && !$is_internal) {
+          // authenticators found, init TFA flow
+          $_SESSION['pending_mailcow_cc_username'] = $user;
+          $_SESSION['pending_mailcow_cc_role'] = "user";
+          $_SESSION['pending_tfa_methods'] = $authenticators['additional'];
+          unset($_SESSION['ldelay']);
+          $_SESSION['return'][] =  array(
+            'type' => 'success',
+            'log' => array(__FUNCTION__, $user, '*'),
+            'msg' => array('logged_in_as', $user)
+          );
+          return "pending";
+        } else if (!isset($authenticators['additional']) || !is_array($authenticators['additional']) || count($authenticators['additional']) == 0) {
+          // no authenticators found, login successfull
+          if (!$is_internal){
+            unset($_SESSION['ldelay']);
+            // Reactivate TFA if it was set to "deactivate TFA for next login"
+            $stmt = $pdo->prepare("UPDATE `tfa` SET `active`='1' WHERE `username` = :user");
+            $stmt->execute(array(':user' => $user));
+            $_SESSION['return'][] =  array(
+              'type' => 'success',
+              'log' => array(__FUNCTION__, $user, '*'),
+              'msg' => array('logged_in_as', $user)
+            );
+          }
+          return "user";
+        }
+      }
+    break;
   }
  
-  // verify password
-  if (verify_hash($row['password'], $pass) !== false) {
-    // check for tfa authenticators
-    $authenticators = get_tfa($user);
-    if (isset($authenticators['additional']) && is_array($authenticators['additional']) && count($authenticators['additional']) > 0 && !$is_internal) {
-      // authenticators found, init TFA flow
-      $_SESSION['pending_mailcow_cc_username'] = $user;
-      $_SESSION['pending_mailcow_cc_role'] = "user";
-      $_SESSION['pending_tfa_methods'] = $authenticators['additional'];
-      unset($_SESSION['ldelay']);
-      $_SESSION['return'][] =  array(
-        'type' => 'success',
-        'log' => array(__FUNCTION__, $user, '*'),
-        'msg' => array('logged_in_as', $user)
-      );
-      return "pending";
-    } else if (!isset($authenticators['additional']) || !is_array($authenticators['additional']) || count($authenticators['additional']) == 0) {
-      // no authenticators found, login successfull
-      if (!$is_internal){
-        unset($_SESSION['ldelay']);
-        // Reactivate TFA if it was set to "deactivate TFA for next login"
-        $stmt = $pdo->prepare("UPDATE `tfa` SET `active`='1' WHERE `username` = :user");
-        $stmt->execute(array(':user' => $user));
-        $_SESSION['return'][] =  array(
-          'type' => 'success',
-          'log' => array(__FUNCTION__, $user, '*'),
-          'msg' => array('logged_in_as', $user)
-        );
-      }
-      return "user";
-    }
-  }
-
   return false;
 }
 function apppass_login($user, $pass, $app_passwd_data, $extra = null){
@@ -368,6 +380,67 @@ function keycloak_mbox_login_rest($user, $pass, $iam_settings, $extra = null){
   // get mapped template, if not set return false
   // also return false if no mappers were defined
   $user_template = $user_res['attributes']['mailcow_template'][0];
+  if ($create && (empty($iam_settings['mappers']) || !$user_template)){
+    return false;
+  } else if (!$create) {
+    // login success - dont create mailbox
+    $_SESSION['return'][] =  array(
+      'type' => 'success',
+      'log' => array(__FUNCTION__, $user, '*'),
+      'msg' => array('logged_in_as', $user)
+    );
+    return 'user';
+  }
+
+  // check if matching attribute exist
+  $mapper_key = array_search($user_template, $iam_settings['mappers']);
+  if ($mapper_key === false) return false;
+
+  // create mailbox
+  $create_res = mailbox('add', 'mailbox_from_template', array(
+    'domain' => explode('@', $user)[1],
+    'local_part' => explode('@', $user)[0],
+    'authsource' => 'keycloak',
+    'template' => $iam_settings['mappers'][$mapper_key]
+  ));
+  if (!$create_res) return false;
+
+
+  $_SESSION['return'][] =  array(
+    'type' => 'success',
+    'log' => array(__FUNCTION__, $user, '*'),
+    'msg' => array('logged_in_as', $user)
+  );
+  return 'user';
+}
+function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
+  global $pdo;
+  global $iam_provider;
+
+  $is_internal = $extra['is_internal'];
+  $create = $extra['create'];
+
+  if (!filter_var($user, FILTER_VALIDATE_EMAIL) && !ctype_alnum(str_replace(array('_', '.', '-'), '', $user))) {
+    if (!$is_internal){
+      $_SESSION['return'][] =  array(
+        'type' => 'danger',
+        'log' => array(__FUNCTION__, $user, '*'),
+        'msg' => 'malformed_username'
+      );
+    }
+    return false;
+  }
+
+  $user_res = $iam_provider->query()
+    ->where('samaccountname', '=', $user)
+    ->firstOrFail();
+  if (!$iam_provider->auth()->attempt($user_res['distinguishedname'][0], $pass)) {
+    return false;
+  }
+
+  // get mapped template, if not set return false
+  // also return false if no mappers were defined
+  $user_template = $user_res['mailcow_template'][0];
   if ($create && (empty($iam_settings['mappers']) || !$user_template)){
     return false;
   } else if (!$create) {

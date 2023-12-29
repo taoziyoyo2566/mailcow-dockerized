@@ -2001,12 +2001,18 @@ function identity_provider($_action, $_data = null, $_extra = null) {
         $_SESSION['return'][] =  array(
           'type' => 'danger',
           'log' => array(__FUNCTION__, $_action, $data_log),
-          'msg' => array('required_data_missing', $setting)
+          'msg' => array('required_data_missing', '')
         );
         return false;
       }
+
+      $available_authsources = array(
+        "keycloak",
+        "generic-oidc",
+        "ldap"
+      );
       $_data['authsource'] = strtolower($_data['authsource']);
-      if ($_data['authsource'] != "keycloak" && $_data['authsource'] != "generic-oidc"){
+      if (!in_array($_data['authsource'], $available_authsources)){
         $_SESSION['return'][] =  array(
           'type' => 'danger',
           'log' => array(__FUNCTION__, $_action, $data_log),
@@ -2030,20 +2036,31 @@ function identity_provider($_action, $_data = null, $_extra = null) {
         return false;
       }
 
-      if ($_data['authsource'] == "keycloak") {
-        $_data['server_url']        = (!empty($_data['server_url'])) ? rtrim($_data['server_url'], '/') : null;
-        $_data['mailpassword_flow'] = isset($_data['mailpassword_flow']) ? intval($_data['mailpassword_flow']) : 0;
-        $_data['periodic_sync']     = isset($_data['periodic_sync']) ? intval($_data['periodic_sync']) : 0;
-        $_data['import_users']      = isset($_data['import_users']) ? intval($_data['import_users']) : 0;
-        $_data['sync_interval']     = isset($_data['sync_interval']) ? intval($_data['sync_interval']) : 15;
-        $_data['sync_interval']     = $_data['sync_interval'] < 1 ? 1 : $_data['sync_interval'];
-        $required_settings          = array('authsource', 'server_url', 'realm', 'client_id', 'client_secret', 'redirect_url', 'version', 'mailpassword_flow', 'periodic_sync', 'import_users', 'sync_interval');
-      } else if ($_data['authsource'] == "generic-oidc") {
-        $_data['authorize_url']     = (!empty($_data['authorize_url'])) ? $_data['authorize_url'] : null;
-        $_data['token_url']         = (!empty($_data['token_url'])) ? $_data['token_url'] : null;
-        $_data['userinfo_url']      = (!empty($_data['userinfo_url'])) ? $_data['userinfo_url'] : null;
-        $_data['client_scopes']     = (!empty($_data['client_scopes'])) ? $_data['client_scopes'] : "openid profile email";
-        $required_settings          = array('authsource', 'authorize_url', 'token_url', 'client_id', 'client_secret', 'redirect_url', 'userinfo_url', 'client_scopes');
+      switch ($_data['authsource']) {
+        case "keycloak":
+          $_data['server_url']        = (!empty($_data['server_url'])) ? rtrim($_data['server_url'], '/') : null;
+          $_data['mailpassword_flow'] = isset($_data['mailpassword_flow']) ? intval($_data['mailpassword_flow']) : 0;
+          $_data['periodic_sync']     = isset($_data['periodic_sync']) ? intval($_data['periodic_sync']) : 0;
+          $_data['import_users']      = isset($_data['import_users']) ? intval($_data['import_users']) : 0;
+          $_data['sync_interval']     = isset($_data['sync_interval']) ? intval($_data['sync_interval']) : 15;
+          $_data['sync_interval']     = $_data['sync_interval'] < 1 ? 1 : $_data['sync_interval'];
+          $required_settings          = array('authsource', 'server_url', 'realm', 'client_id', 'client_secret', 'redirect_url', 'version', 'mailpassword_flow', 'periodic_sync', 'import_users', 'sync_interval');
+        break;
+        case "generic-oidc":
+          $_data['authorize_url']     = (!empty($_data['authorize_url'])) ? $_data['authorize_url'] : null;
+          $_data['token_url']         = (!empty($_data['token_url'])) ? $_data['token_url'] : null;
+          $_data['userinfo_url']      = (!empty($_data['userinfo_url'])) ? $_data['userinfo_url'] : null;
+          $_data['client_scopes']     = (!empty($_data['client_scopes'])) ? $_data['client_scopes'] : "openid profile email";
+          $required_settings          = array('authsource', 'authorize_url', 'token_url', 'client_id', 'client_secret', 'redirect_url', 'userinfo_url', 'client_scopes');
+        break;
+        case "ldap":
+          $_data['port']              = isset($_data['port']) ? intval($_data['port']) : 389;
+          $_data['periodic_sync']     = isset($_data['periodic_sync']) ? intval($_data['periodic_sync']) : 0;
+          $_data['import_users']      = isset($_data['import_users']) ? intval($_data['import_users']) : 0;
+          $_data['sync_interval']     = isset($_data['sync_interval']) ? intval($_data['sync_interval']) : 15;
+          $_data['sync_interval']     = $_data['sync_interval'] < 1 ? 1 : $_data['sync_interval'];
+          $required_settings          = array('authsource', 'host', 'port', 'basedn', 'binddn', 'bindpass');
+        break;
       }
       
       $pdo->beginTransaction();
@@ -2167,36 +2184,57 @@ function identity_provider($_action, $_data = null, $_extra = null) {
     case "init":
       $iam_settings = identity_provider('get');
       $provider = null;
-      if ($iam_settings['authsource'] == 'keycloak'){
-        if ($iam_settings['server_url'] && $iam_settings['realm'] && $iam_settings['client_id'] &&
+
+      switch ($iam_settings['authsource']) {
+        case "keycloak":
+          if ($iam_settings['server_url'] && $iam_settings['realm'] && $iam_settings['client_id'] &&
             $iam_settings['client_secret'] && $iam_settings['redirect_url'] && $iam_settings['version']){
-          $provider = new Stevenmaguire\OAuth2\Client\Provider\Keycloak([
-            'authServerUrl'         => $iam_settings['server_url'],
-            'realm'                 => $iam_settings['realm'],
-            'clientId'              => $iam_settings['client_id'],
-            'clientSecret'          => $iam_settings['client_secret'],
-            'redirectUri'           => $iam_settings['redirect_url'],
-            'version'               => $iam_settings['version'],                            
-            // 'encryptionAlgorithm'   => 'RS256',                             // optional
-            // 'encryptionKeyPath'     => '../key.pem'                         // optional
-            // 'encryptionKey'         => 'contents_of_key_or_certificate'     // optional
-          ]);
-        }
-      }
-      else if ($iam_settings['authsource'] == 'generic-oidc'){
-        if ($iam_settings['client_id'] && $iam_settings['client_secret'] && $iam_settings['redirect_url'] &&
+            $provider = new Stevenmaguire\OAuth2\Client\Provider\Keycloak([
+              'authServerUrl'         => $iam_settings['server_url'],
+              'realm'                 => $iam_settings['realm'],
+              'clientId'              => $iam_settings['client_id'],
+              'clientSecret'          => $iam_settings['client_secret'],
+              'redirectUri'           => $iam_settings['redirect_url'],
+              'version'               => $iam_settings['version'],                            
+              // 'encryptionAlgorithm'   => 'RS256',                             // optional
+              // 'encryptionKeyPath'     => '../key.pem'                         // optional
+              // 'encryptionKey'         => 'contents_of_key_or_certificate'     // optional
+            ]);
+          }
+        break;
+        case "generic-oidc":
+          if ($iam_settings['client_id'] && $iam_settings['client_secret'] && $iam_settings['redirect_url'] &&
             $iam_settings['authorize_url'] && $iam_settings['token_url'] && $iam_settings['userinfo_url']){
-          $provider = new \League\OAuth2\Client\Provider\GenericProvider([
-            'clientId'                => $iam_settings['client_id'],
-            'clientSecret'            => $iam_settings['client_secret'],
-            'redirectUri'             => $iam_settings['redirect_url'],
-            'urlAuthorize'            => $iam_settings['authorize_url'],
-            'urlAccessToken'          => $iam_settings['token_url'],
-            'urlResourceOwnerDetails' => $iam_settings['userinfo_url'],
-            'scopes'                  => $iam_settings['client_scopes']
-          ]);
-        }
+            $provider = new \League\OAuth2\Client\Provider\GenericProvider([
+              'clientId'                => $iam_settings['client_id'],
+              'clientSecret'            => $iam_settings['client_secret'],
+              'redirectUri'             => $iam_settings['redirect_url'],
+              'urlAuthorize'            => $iam_settings['authorize_url'],
+              'urlAccessToken'          => $iam_settings['token_url'],
+              'urlResourceOwnerDetails' => $iam_settings['userinfo_url'],
+              'scopes'                  => $iam_settings['client_scopes']
+            ]);
+          }
+        break;
+        case "ldap":
+          if ($iam_settings['host'] && $iam_settings['port'] && $iam_settings['basedn'] &&
+            $iam_settings['binddn'] && $iam_settings['bindpass']){
+            $provider = new \LdapRecord\Connection([
+              'hosts'                     => [$iam_settings['host']],
+              'port'                      => $iam_settings['port'],
+              'base_dn'                   => $iam_settings['basedn'],
+              'username'                  => $iam_settings['binddn'],
+              'password'                  => $iam_settings['bindpass']
+            ]);
+            try {
+              $provider->connect();
+            } catch (TypeError $e) {
+              $provider = null;
+            }
+          }
+        break;
       }
+
       return $provider;
     break;
     case "verify-sso":
