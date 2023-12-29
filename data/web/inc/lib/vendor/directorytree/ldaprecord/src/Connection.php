@@ -5,6 +5,7 @@ namespace LdapRecord;
 use Carbon\Carbon;
 use Closure;
 use LdapRecord\Auth\Guard;
+use LdapRecord\Configuration\ConfigurationException;
 use LdapRecord\Configuration\DomainConfiguration;
 use LdapRecord\Events\DispatcherInterface;
 use LdapRecord\Query\Builder;
@@ -17,81 +18,60 @@ class Connection
 
     /**
      * The underlying LDAP connection.
-     *
-     * @var Ldap
      */
-    protected $ldap;
+    protected LdapInterface $ldap;
 
     /**
      * The cache driver.
-     *
-     * @var Cache|null
      */
-    protected $cache;
+    protected ?Cache $cache = null;
 
     /**
      * The domain configuration.
-     *
-     * @var DomainConfiguration
      */
-    protected $configuration;
+    protected DomainConfiguration $configuration;
 
     /**
-     * The event dispatcher;.
-     *
-     * @var DispatcherInterface|null
+     * The event dispatcher.
      */
-    protected $dispatcher;
+    protected ?DispatcherInterface $dispatcher = null;
 
     /**
-     * The current host connected to.
-     *
-     * @var string
+     * The currently connected host.
      */
-    protected $host;
+    protected string $host;
 
     /**
      * The configured domain hosts.
-     *
-     * @var array
      */
-    protected $hosts = [];
+    protected array $hosts = [];
 
     /**
      * The attempted hosts that failed connecting to.
-     *
-     * @var array
      */
-    protected $attempted = [];
+    protected array $attempted = [];
 
     /**
      * The callback to execute upon total connection failure.
-     *
-     * @var Closure
      */
-    protected $failed;
+    protected Closure $failed;
 
     /**
      * The authentication guard resolver.
-     *
-     * @var Closure
      */
-    protected $authGuardResolver;
+    protected Closure $authGuardResolver;
 
     /**
      * Whether the connection is retrying the initial connection attempt.
-     *
-     * @var bool
      */
-    protected $retryingInitialConnection = false;
+    protected bool $retryingInitialConnection = false;
 
     /**
      * Constructor.
      *
-     * @param array              $config
-     * @param LdapInterface|null $ldap
+     * @throws ConfigurationException
      */
-    public function __construct($config = [], LdapInterface $ldap = null)
+    public function __construct(DomainConfiguration|array $config = [], LdapInterface $ldap = null)
     {
         $this->setConfiguration($config);
 
@@ -109,57 +89,49 @@ class Connection
     /**
      * Set the connection configuration.
      *
-     * @param array $config
-     *
-     * @return $this
-     *
      * @throws Configuration\ConfigurationException
      */
-    public function setConfiguration($config = [])
+    public function setConfiguration(DomainConfiguration|array $config = []): void
     {
-        $this->configuration = new DomainConfiguration($config);
+        if (! $config instanceof DomainConfiguration) {
+            $config = new DomainConfiguration($config);
+        }
+
+        $this->configuration = $config;
 
         $this->hosts = $this->configuration->get('hosts');
 
         $this->host = reset($this->hosts);
-
-        return $this;
     }
 
     /**
      * Set the LDAP connection.
-     *
-     * @param LdapInterface $ldap
-     *
-     * @return $this
      */
-    public function setLdapConnection(LdapInterface $ldap)
+    public function setLdapConnection(LdapInterface $ldap): void
     {
         $this->ldap = $ldap;
-
-        return $this;
     }
 
     /**
      * Set the event dispatcher.
-     *
-     * @param DispatcherInterface $dispatcher
-     *
-     * @return $this
      */
-    public function setDispatcher(DispatcherInterface $dispatcher)
+    public function setDispatcher(DispatcherInterface $dispatcher): void
     {
         $this->dispatcher = $dispatcher;
-
-        return $this;
     }
 
     /**
-     * Initializes the LDAP connection.
-     *
-     * @return void
+     * Get the event dispatcher.
      */
-    public function initialize()
+    public function getDispatcher(): ?DispatcherInterface
+    {
+        return $this->dispatcher;
+    }
+
+    /**
+     * Initialize the LDAP connection.
+     */
+    public function initialize(): void
     {
         $this->configure();
 
@@ -168,10 +140,8 @@ class Connection
 
     /**
      * Configure the LDAP connection.
-     *
-     * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         if ($this->configuration->get('use_ssl')) {
             $this->ldap->ssl();
@@ -191,46 +161,42 @@ class Connection
 
     /**
      * Set the cache store.
-     *
-     * @param CacheInterface $store
-     *
-     * @return $this
      */
-    public function setCache(CacheInterface $store)
+    public function setCache(CacheInterface $store): void
     {
         $this->cache = new Cache($store);
-
-        return $this;
     }
 
     /**
      * Get the cache store.
-     *
-     * @return Cache|null
      */
-    public function getCache()
+    public function getCache(): ?Cache
     {
         return $this->cache;
     }
 
     /**
      * Get the LDAP configuration instance.
-     *
-     * @return DomainConfiguration
      */
-    public function getConfiguration()
+    public function getConfiguration(): DomainConfiguration
     {
         return $this->configuration;
     }
 
     /**
      * Get the LDAP connection instance.
-     *
-     * @return Ldap
      */
-    public function getLdapConnection()
+    public function getLdapConnection(): LdapInterface
     {
         return $this->ldap;
+    }
+
+    /**
+     * Set the auth guard resolver callback.
+     */
+    public function setGuardResolver(Closure $callback): void
+    {
+        $this->authGuardResolver = $callback;
     }
 
     /**
@@ -238,15 +204,10 @@ class Connection
      *
      * If no username or password is specified, then the configured credentials are used.
      *
-     * @param string|null $username
-     * @param string|null $password
-     *
-     * @return Connection
-     *
      * @throws Auth\BindException
      * @throws LdapRecordException
      */
-    public function connect($username = null, $password = null)
+    public function connect(string $username = null, string $password = null): void
     {
         $attempt = function () use ($username, $password) {
             $this->dispatch(new Events\Connecting($this));
@@ -267,19 +228,16 @@ class Connection
 
             $this->retryOnNextHost($e, $attempt);
         }
-
-        return $this;
     }
 
     /**
      * Reconnect to the LDAP server.
      *
-     * @return void
-     *
      * @throws Auth\BindException
      * @throws ConnectionException
+     * @throws LdapRecordException
      */
-    public function reconnect()
+    public function reconnect(): void
     {
         $this->reinitialize();
 
@@ -288,10 +246,8 @@ class Connection
 
     /**
      * Reinitialize the connection.
-     *
-     * @return void
      */
-    protected function reinitialize()
+    protected function reinitialize(): void
     {
         $this->disconnect();
 
@@ -299,23 +255,25 @@ class Connection
     }
 
     /**
-     * Disconnect from the LDAP server.
-     *
-     * @return void
+     * Clone the connection.
      */
-    public function disconnect()
+    public function replicate(): static
+    {
+        return new static($this->configuration, new $this->ldap);
+    }
+
+    /**
+     * Disconnect from the LDAP server.
+     */
+    public function disconnect(): void
     {
         $this->ldap->close();
     }
 
     /**
      * Dispatch an event.
-     *
-     * @param object $event
-     *
-     * @return void
      */
-    public function dispatch($event)
+    public function dispatch(object $event): void
     {
         if (isset($this->dispatcher)) {
             $this->dispatcher->dispatch($event);
@@ -324,26 +282,20 @@ class Connection
 
     /**
      * Get the attempted hosts that failed connecting to.
-     *
-     * @return array
      */
-    public function attempted()
+    public function attempted(): array
     {
         return $this->attempted;
     }
 
     /**
      * Perform the operation on the LDAP connection.
-     *
-     * @param Closure $operation
-     *
-     * @return mixed
      */
-    public function run(Closure $operation)
+    public function run(Closure $operation): mixed
     {
         try {
             // Before running the operation, we will check if the current
-            // connection is bound and connect if necessary. Otherwise
+            // connection is bound and connect if necessary. Otherwise,
             // some LDAP operations will not be executed properly.
             if (! $this->isConnected()) {
                 $this->connect();
@@ -360,13 +312,23 @@ class Connection
     }
 
     /**
-     * Attempt to get an exception for the cause of failure.
-     *
-     * @param LdapRecordException $e
-     *
-     * @return mixed
+     * Perform the operation on an isolated LDAP connection.
      */
-    protected function getExceptionForCauseOfFailure(LdapRecordException $e)
+    public function isolate(Closure $operation): mixed
+    {
+        $connection = $this->replicate();
+
+        try {
+            return $operation($connection);
+        } finally {
+            $connection->disconnect();
+        }
+    }
+
+    /**
+     * Attempt to get an exception for the cause of failure.
+     */
+    protected function getExceptionForCauseOfFailure(LdapRecordException $e): ?LdapRecordException
     {
         switch (true) {
             case $this->errorContainsMessage($e->getMessage(), 'Already exists'):
@@ -376,30 +338,22 @@ class Connection
             case $this->errorContainsMessage($e->getMessage(), 'Constraint violation'):
                 return Exceptions\ConstraintViolationException::withDetailedError($e, $e->getDetailedError());
             default:
-                return;
+                return null;
         }
     }
 
     /**
      * Run the operation callback on the current LDAP connection.
-     *
-     * @param Closure $operation
-     *
-     * @return mixed
-     *
-     * @throws LdapRecordException
      */
-    protected function runOperationCallback(Closure $operation)
+    protected function runOperationCallback(Closure $operation): mixed
     {
         return $operation($this->ldap);
     }
 
     /**
      * Get a new auth guard instance.
-     *
-     * @return Auth\Guard
      */
-    public function auth()
+    public function auth(): Guard
     {
         if (! $this->ldap->isConnected()) {
             $this->initialize();
@@ -408,7 +362,7 @@ class Connection
         $guard = call_user_func($this->authGuardResolver);
 
         $guard->setDispatcher(
-            Container::getInstance()->getEventDispatcher()
+            Container::getInstance()->getDispatcher()
         );
 
         return $guard;
@@ -416,10 +370,8 @@ class Connection
 
     /**
      * Get a new query builder for the connection.
-     *
-     * @return Query\Builder
      */
-    public function query()
+    public function query(): Builder
     {
         return (new Builder($this))
             ->setCache($this->cache)
@@ -428,10 +380,8 @@ class Connection
 
     /**
      * Determine if the LDAP connection is bound.
-     *
-     * @return bool
      */
-    public function isConnected()
+    public function isConnected(): bool
     {
         return $this->ldap->isBound();
     }
@@ -439,14 +389,9 @@ class Connection
     /**
      * Attempt to retry an LDAP operation if due to a lost connection.
      *
-     * @param LdapRecordException $e
-     * @param Closure             $operation
-     *
-     * @return mixed
-     *
      * @throws LdapRecordException
      */
-    protected function tryAgainIfCausedByLostConnection(LdapRecordException $e, Closure $operation)
+    protected function tryAgainIfCausedByLostConnection(LdapRecordException $e, Closure $operation): mixed
     {
         // If the operation failed due to a lost or failed connection,
         // we'll attempt reconnecting and running the operation again
@@ -461,13 +406,9 @@ class Connection
     /**
      * Retry the operation on the current host.
      *
-     * @param Closure $operation
-     *
-     * @return mixed
-     *
      * @throws LdapRecordException
      */
-    protected function retry(Closure $operation)
+    protected function retry(Closure $operation): mixed
     {
         try {
             $this->retryingInitialConnection
@@ -483,14 +424,9 @@ class Connection
     /**
      * Attempt the operation again on the next host.
      *
-     * @param LdapRecordException $e
-     * @param Closure             $operation
-     *
-     * @return mixed
-     *
      * @throws LdapRecordException
      */
-    protected function retryOnNextHost(LdapRecordException $e, Closure $operation)
+    protected function retryOnNextHost(LdapRecordException $e, Closure $operation): mixed
     {
         $this->attempted[$this->host] = Carbon::now();
 

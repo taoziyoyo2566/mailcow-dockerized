@@ -4,94 +4,69 @@ namespace LdapRecord\Models\Attributes;
 
 use LdapRecord\EscapesValues;
 use LdapRecord\Support\Arr;
+use Stringable;
 
-class DistinguishedName
+class DistinguishedName implements Stringable
 {
     use EscapesValues;
 
     /**
-     * The underlying raw value.
-     *
-     * @var string
+     * The underlying raw distinguished name value.
      */
-    protected $value;
+    protected string $value;
 
     /**
      * Constructor.
-     *
-     * @param string|null $value
      */
-    public function __construct($value = null)
+    public function __construct(string $value = null)
     {
         $this->value = trim((string) $value);
     }
 
     /**
      * Get the distinguished name value.
-     *
-     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return (string) $this->value;
+        return $this->value;
     }
 
     /**
      * Alias of the "build" method.
-     *
-     * @param string|null $value
-     *
-     * @return DistinguishedNameBuilder
      */
-    public static function of($value = null)
+    public static function of(string $value = null): DistinguishedNameBuilder
     {
         return static::build($value);
     }
 
     /**
      * Get a new DN builder object from the given DN.
-     *
-     * @param string|null $value
-     *
-     * @return DistinguishedNameBuilder
      */
-    public static function build($value = null)
+    public static function build(string $value = null): DistinguishedNameBuilder
     {
         return new DistinguishedNameBuilder($value);
     }
 
     /**
      * Make a new distinguished name instance.
-     *
-     * @param string|null $value
-     *
-     * @return static
      */
-    public static function make($value = null)
+    public static function make(string $value = null): static
     {
         return new static($value);
     }
 
     /**
      * Determine if the given value is a valid distinguished name.
-     *
-     * @param string $value
-     *
-     * @return bool
      */
-    public static function isValid($value)
+    public static function isValid(string $value = null): bool
     {
         return ! static::make($value)->isEmpty();
     }
 
     /**
      * Explode a distinguished name into relative distinguished names.
-     *
-     * @param string $dn
-     *
-     * @return array
      */
-    public static function explode($dn)
+    public static function explode(string $dn): array
     {
         $components = ldap_explode_dn($dn, (int) $withoutAttributes = false);
 
@@ -109,61 +84,33 @@ class DistinguishedName
     }
 
     /**
-     * Un-escapes a hexadecimal string into its original string representation.
-     *
-     * @param string $value
-     *
-     * @return string
-     */
-    public static function unescape($value)
-    {
-        return preg_replace_callback('/\\\([0-9A-Fa-f]{2})/', function ($matches) {
-            return chr(hexdec($matches[1]));
-        }, $value);
-    }
-
-    /**
      * Explode the RDN into an attribute and value.
-     *
-     * @param string $rdn
-     *
-     * @return array
      */
-    public static function explodeRdn($rdn)
+    public static function explodeRdn(string $rdn): array
     {
         return explode('=', $rdn, $limit = 2);
     }
 
     /**
      * Implode the component attribute and value into an RDN.
-     *
-     * @param string $rdn
-     *
-     * @return string
      */
-    public static function makeRdn(array $component)
+    public static function makeRdn(array $component): string
     {
         return implode('=', $component);
     }
 
     /**
      * Get the underlying value.
-     *
-     * @return string|null
      */
-    public function get()
+    public function get(): ?string
     {
         return $this->value;
     }
 
     /**
      * Set the underlying value.
-     *
-     * @param string|null $value
-     *
-     * @return $this
      */
-    public function set($value)
+    public function set(string $value = null): static
     {
         $this->value = $value;
 
@@ -172,15 +119,13 @@ class DistinguishedName
 
     /**
      * Get the distinguished name values without attributes.
-     *
-     * @return array
      */
-    public function values()
+    public function values(): array
     {
         $values = [];
 
         foreach ($this->multi() as [, $value]) {
-            $values[] = static::unescape($value);
+            $values[] = EscapedValue::unescape($value);
         }
 
         return $values;
@@ -188,10 +133,8 @@ class DistinguishedName
 
     /**
      * Get the distinguished name attributes without values.
-     *
-     * @return array
      */
-    public function attributes()
+    public function attributes(): array
     {
         $attributes = [];
 
@@ -204,10 +147,8 @@ class DistinguishedName
 
     /**
      * Get the distinguished name components with attributes.
-     *
-     * @return array
      */
-    public function components()
+    public function components(): array
     {
         $components = [];
 
@@ -216,7 +157,7 @@ class DistinguishedName
             // escaped. This cannot be opted out of. Here we will unescape
             // the attribute value, then re-escape it to its original
             // representation from the server using the "dn" flag.
-            $value = $this->escape(static::unescape($value))->dn();
+            $value = $this->escape(EscapedValue::unescape($value))->forDn();
 
             $components[] = static::makeRdn([$attribute, $value]);
         }
@@ -226,10 +167,8 @@ class DistinguishedName
 
     /**
      * Convert the distinguished name into an associative array.
-     *
-     * @return array
      */
-    public function assoc()
+    public function assoc(): array
     {
         $map = [];
 
@@ -246,52 +185,43 @@ class DistinguishedName
 
     /**
      * Split the RDNs into a multi-dimensional array.
-     *
-     * @return array
      */
-    public function multi()
+    public function multi(): array
     {
-        return array_map(function ($rdn) {
-            return static::explodeRdn($rdn);
-        }, $this->rdns());
+        return array_map(
+            fn ($rdn) => static::explodeRdn($rdn),
+            $this->rdns()
+        );
     }
 
     /**
      * Split the distinguished name into an array of unescaped RDN's.
-     *
-     * @return array
      */
-    public function rdns()
+    public function rdns(): array
     {
         return static::explode($this->value);
     }
 
     /**
      * Get the first RDNs value.
-     *
-     * @return string|null
      */
-    public function name()
+    public function name(): ?string
     {
         return Arr::first($this->values());
     }
 
     /**
      * Get the first RDNs attribute.
-     *
-     * @return string|null
      */
-    public function head()
+    public function head(): ?string
     {
         return Arr::first($this->attributes());
     }
 
     /**
      * Get the relative distinguished name.
-     *
-     * @return string|null
      */
-    public function relative()
+    public function relative(): ?string
     {
         return Arr::first($this->components());
     }
@@ -300,20 +230,16 @@ class DistinguishedName
      * Alias of relative().
      *
      * Get the first RDN from the distinguished name.
-     *
-     * @return string|null
      */
-    public function first()
+    public function first(): ?string
     {
         return $this->relative();
     }
 
     /**
      * Get the parent distinguished name.
-     *
-     * @return string|null
      */
-    public function parent()
+    public function parent(): ?string
     {
         $components = $this->components();
 
@@ -324,10 +250,8 @@ class DistinguishedName
 
     /**
      * Determine if the distinguished name is empty.
-     *
-     * @return bool
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return empty(
             array_filter($this->values())
@@ -336,24 +260,16 @@ class DistinguishedName
 
     /**
      * Determine if the current distinguished name is a parent of the given child.
-     *
-     * @param DistinguishedName $child
-     *
-     * @return bool
      */
-    public function isParentOf(self $child)
+    public function isParentOf(self $child): bool
     {
         return $child->isChildOf($this);
     }
 
     /**
      * Determine if the current distinguished name is a child of the given parent.
-     *
-     * @param DistinguishedName $parent
-     *
-     * @return bool
      */
-    public function isChildOf(self $parent)
+    public function isChildOf(self $parent): bool
     {
         if (
             empty($components = $this->components()) ||
@@ -369,24 +285,16 @@ class DistinguishedName
 
     /**
      * Determine if the current distinguished name is an ancestor of the descendant.
-     *
-     * @param DistinguishedName $descendant
-     *
-     * @return bool
      */
-    public function isAncestorOf(self $descendant)
+    public function isAncestorOf(self $descendant): bool
     {
         return $descendant->isDescendantOf($this);
     }
 
     /**
      * Determine if the current distinguished name is a descendant of the ancestor.
-     *
-     * @param DistinguishedName $ancestor
-     *
-     * @return bool
      */
-    public function isDescendantOf(self $ancestor)
+    public function isDescendantOf(self $ancestor): bool
     {
         if (
             empty($components = $this->components()) ||
@@ -406,37 +314,24 @@ class DistinguishedName
 
     /**
      * Compare whether the two distinguished name values are equal.
-     *
-     * @param array $values
-     * @param array $other
-     *
-     * @return bool
      */
-    protected function compare(array $values, array $other)
+    protected function compare(array $values, array $other): bool
     {
         return $this->recase($values) == $this->recase($other);
     }
 
     /**
      * Recase the array values.
-     *
-     * @param array $values
-     *
-     * @return array
      */
-    protected function recase(array $values)
+    protected function recase(array $values): array
     {
         return array_map([$this, 'normalize'], $values);
     }
 
     /**
      * Normalize the string value.
-     *
-     * @param string $value
-     *
-     * @return string
      */
-    protected function normalize($value)
+    protected function normalize(string $value): string
     {
         return strtolower($value);
     }

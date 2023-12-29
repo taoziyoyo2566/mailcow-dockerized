@@ -4,25 +4,24 @@ namespace LdapRecord\Models\Concerns;
 
 use Closure;
 use LdapRecord\Events\NullDispatcher;
+use LdapRecord\Models\Events;
 use LdapRecord\Models\Events\Event;
+use LdapRecord\Support\Arr;
 
+/** @mixin \LdapRecord\Models\Model */
 trait HasEvents
 {
     /**
      * Execute the callback without raising any events.
-     *
-     * @param Closure $callback
-     *
-     * @return mixed
      */
-    protected static function withoutEvents(Closure $callback)
+    protected static function withoutEvents(Closure $callback): mixed
     {
         $container = static::getConnectionContainer();
 
-        $dispatcher = $container->getEventDispatcher();
+        $dispatcher = $container->getDispatcher();
 
         if ($dispatcher) {
-            $container->setEventDispatcher(
+            $container->setDispatcher(
                 new NullDispatcher($dispatcher)
             );
         }
@@ -31,33 +30,44 @@ trait HasEvents
             return $callback();
         } finally {
             if ($dispatcher) {
-                $container->setEventDispatcher($dispatcher);
+                $container->setDispatcher($dispatcher);
             }
         }
     }
 
     /**
-     * Fires the specified model event.
-     *
-     * @param Event $event
-     *
-     * @return mixed
+     * Dispatch the given model events.
      */
-    protected function fireModelEvent(Event $event)
+    protected function dispatch(array|string $events, array $args = []): void
     {
-        return static::getConnectionContainer()->getEventDispatcher()->fire($event);
+        foreach (Arr::wrap($events) as $name) {
+            $this->fireCustomModelEvent($name, $args);
+        }
     }
 
     /**
-     * Listens to a model event.
-     *
-     * @param string  $event
-     * @param Closure $listener
-     *
-     * @return mixed
+     * Fire a custom model event.
      */
-    protected function listenForModelEvent($event, Closure $listener)
+    protected function fireCustomModelEvent(string $name, array $args = []): void
     {
-        return static::getConnectionContainer()->getEventDispatcher()->listen($event, $listener);
+        $event = implode('\\', [Events::class, ucfirst($name)]);
+
+        $this->fireModelEvent(new $event($this, ...$args));
+    }
+
+    /**
+     * Fire a model event.
+     */
+    protected function fireModelEvent(Event $event): void
+    {
+        static::getConnectionContainer()->getDispatcher()->fire($event);
+    }
+
+    /**
+     * Listen to a model event.
+     */
+    protected function listenForModelEvent(string $event, Closure $listener): void
+    {
+        static::getConnectionContainer()->getDispatcher()->listen($event, $listener);
     }
 }

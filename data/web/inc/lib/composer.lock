@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8f5a147cdb147b935a158b86f47a4747",
+    "content-hash": "fd27cf57a4437070d086f1958c12e1cc",
     "packages": [
         {
             "name": "bshaffer/oauth2-server-php",
@@ -145,29 +145,32 @@
         },
         {
             "name": "directorytree/ldaprecord",
-            "version": "v2.10.1",
+            "version": "v3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DirectoryTree/LdapRecord.git",
-                "reference": "bf512d9af7a7b0e2ed7a666ab29cefdd027bee88"
+                "reference": "17540a7740964418c1eba251d31369a276a48a76"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DirectoryTree/LdapRecord/zipball/bf512d9af7a7b0e2ed7a666ab29cefdd027bee88",
-                "reference": "bf512d9af7a7b0e2ed7a666ab29cefdd027bee88",
+                "url": "https://api.github.com/repos/DirectoryTree/LdapRecord/zipball/17540a7740964418c1eba251d31369a276a48a76",
+                "reference": "17540a7740964418c1eba251d31369a276a48a76",
                 "shasum": ""
             },
             "require": {
+                "ext-iconv": "*",
                 "ext-json": "*",
                 "ext-ldap": "*",
-                "illuminate/contracts": "^5.0|^6.0|^7.0|^8.0|^9.0",
-                "nesbot/carbon": "^1.0|^2.0",
-                "php": ">=7.3",
+                "illuminate/collections": "^8.0|^9.0|^10.0",
+                "illuminate/contracts": "^8.0|^9.0|^10.0",
+                "nesbot/carbon": "*",
+                "php": ">=8.1",
                 "psr/log": "*",
-                "psr/simple-cache": "^1.0|^2.0",
-                "tightenco/collect": "^5.6|^6.0|^7.0|^8.0"
+                "psr/simple-cache": "^1.0|^2.0|^3.0"
             },
             "require-dev": {
+                "fakerphp/faker": "^1.21",
+                "laravel/pint": "^1.6",
                 "mockery/mockery": "^1.0",
                 "phpunit/phpunit": "^9.0",
                 "spatie/ray": "^1.24"
@@ -214,7 +217,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-02-25T16:00:51+00:00"
+            "time": "2023-11-08T20:58:22+00:00"
         },
         {
             "name": "firebase/php-jwt",
@@ -608,6 +611,107 @@
             "time": "2023-04-17T16:00:45+00:00"
         },
         {
+            "name": "illuminate/collections",
+            "version": "v9.52.16",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/collections.git",
+                "reference": "d3710b0b244bfc62c288c1a87eaa62dd28352d1f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/collections/zipball/d3710b0b244bfc62c288c1a87eaa62dd28352d1f",
+                "reference": "d3710b0b244bfc62c288c1a87eaa62dd28352d1f",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/conditionable": "^9.0",
+                "illuminate/contracts": "^9.0",
+                "illuminate/macroable": "^9.0",
+                "php": "^8.0.2"
+            },
+            "suggest": {
+                "symfony/var-dumper": "Required to use the dump method (^6.0)."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "9.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "helpers.php"
+                ],
+                "psr-4": {
+                    "Illuminate\\Support\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Collections package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2023-06-11T21:17:10+00:00"
+        },
+        {
+            "name": "illuminate/conditionable",
+            "version": "v9.52.16",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/conditionable.git",
+                "reference": "bea24daa0fa84b7e7b0d5b84f62c71b7e2dc3364"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/conditionable/zipball/bea24daa0fa84b7e7b0d5b84f62c71b7e2dc3364",
+                "reference": "bea24daa0fa84b7e7b0d5b84f62c71b7e2dc3364",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0.2"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "9.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Support\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Conditionable package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2023-02-01T21:42:32+00:00"
+        },
+        {
             "name": "illuminate/contracts",
             "version": "v9.3.0",
             "source": {
@@ -654,6 +758,52 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2022-02-22T14:45:39+00:00"
+        },
+        {
+            "name": "illuminate/macroable",
+            "version": "v9.52.16",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/macroable.git",
+                "reference": "e3bfaf6401742a9c6abca61b9b10e998e5b6449a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/macroable/zipball/e3bfaf6401742a9c6abca61b9b10e998e5b6449a",
+                "reference": "e3bfaf6401742a9c6abca61b9b10e998e5b6449a",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0.2"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "9.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Support\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Macroable package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2022-08-09T13:29:29+00:00"
         },
         {
             "name": "league/oauth2-client",
@@ -2254,148 +2404,6 @@
             "time": "2021-09-07T12:43:40+00:00"
         },
         {
-            "name": "symfony/var-dumper",
-            "version": "v6.0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/var-dumper.git",
-                "reference": "60d6a756d5f485df5e6e40b337334848f79f61ce"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/60d6a756d5f485df5e6e40b337334848f79f61ce",
-                "reference": "60d6a756d5f485df5e6e40b337334848f79f61ce",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.0.2",
-                "symfony/polyfill-mbstring": "~1.0"
-            },
-            "conflict": {
-                "phpunit/phpunit": "<5.4.3",
-                "symfony/console": "<5.4"
-            },
-            "require-dev": {
-                "ext-iconv": "*",
-                "symfony/console": "^5.4|^6.0",
-                "symfony/process": "^5.4|^6.0",
-                "symfony/uid": "^5.4|^6.0",
-                "twig/twig": "^2.13|^3.0.4"
-            },
-            "suggest": {
-                "ext-iconv": "To convert non-UTF-8 strings to UTF-8 (or symfony/polyfill-iconv in case ext-iconv cannot be used).",
-                "ext-intl": "To show region name in time zone dump",
-                "symfony/console": "To use the ServerDumpCommand and/or the bin/var-dump-server script"
-            },
-            "bin": [
-                "Resources/bin/var-dump-server"
-            ],
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "Resources/functions/dump.php"
-                ],
-                "psr-4": {
-                    "Symfony\\Component\\VarDumper\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Provides mechanisms for walking through any arbitrary PHP variable",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "debug",
-                "dump"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/var-dumper/tree/v6.0.5"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2022-02-21T17:15:17+00:00"
-        },
-        {
-            "name": "tightenco/collect",
-            "version": "v8.83.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tighten/collect.git",
-                "reference": "d9c66d586ec2d216d8a31283d73f8df1400cc722"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tighten/collect/zipball/d9c66d586ec2d216d8a31283d73f8df1400cc722",
-                "reference": "d9c66d586ec2d216d8a31283d73f8df1400cc722",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.3|^8.0",
-                "symfony/var-dumper": "^3.4 || ^4.0 || ^5.0 || ^6.0"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.0",
-                "nesbot/carbon": "^2.23.0",
-                "phpunit/phpunit": "^8.3"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/Collect/Support/helpers.php",
-                    "src/Collect/Support/alias.php"
-                ],
-                "psr-4": {
-                    "Tightenco\\Collect\\": "src/Collect"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Taylor Otwell",
-                    "email": "taylorotwell@gmail.com"
-                }
-            ],
-            "description": "Collect - Illuminate Collections as a separate package.",
-            "keywords": [
-                "collection",
-                "laravel"
-            ],
-            "support": {
-                "issues": "https://github.com/tighten/collect/issues",
-                "source": "https://github.com/tighten/collect/tree/v8.83.2"
-            },
-            "time": "2022-02-16T16:15:54+00:00"
-        },
-        {
             "name": "twig/twig",
             "version": "v3.4.3",
             "source": {
@@ -2480,5 +2488,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

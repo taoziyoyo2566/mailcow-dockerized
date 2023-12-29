@@ -14,10 +14,8 @@ class ComposerStaticInit873464e4bd965a3168f133248b1b218b
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         'a1105708a18b76903365ca1c4aa61b02' => __DIR__ . '/..' . '/symfony/translation/Resources/functions.php',
-        '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
+        '60799491728b879e74601d83e38b2cad' => __DIR__ . '/..' . '/illuminate/collections/helpers.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
-        'fe62ba7e10580d903cc46d808b5961a4' => __DIR__ . '/..' . '/tightenco/collect/src/Collect/Support/helpers.php',
-        'caf31cc6ec7cf2241cb6f12c226c3846' => __DIR__ . '/..' . '/tightenco/collect/src/Collect/Support/alias.php',
         '04c6c5c2f7095ccf6c481d3e53e1776f' => __DIR__ . '/..' . '/mustangostang/spyc/Spyc.php',
     );
 
@@ -25,7 +23,6 @@ class ComposerStaticInit873464e4bd965a3168f133248b1b218b
         'T' => 
         array (
             'Twig\\' => 5,
-            'Tightenco\\Collect\\' => 18,
         ),
         'S' => 
         array (
@@ -33,7 +30,6 @@ class ComposerStaticInit873464e4bd965a3168f133248b1b218b
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Contracts\\Translation\\' => 30,
-            'Symfony\\Component\\VarDumper\\' => 28,
             'Symfony\\Component\\Translation\\' => 30,
             'Stevenmaguire\\OAuth2\\Client\\' => 28,
         ),
@@ -63,6 +59,7 @@ class ComposerStaticInit873464e4bd965a3168f133248b1b218b
         ),
         'I' => 
         array (
+            'Illuminate\\Support\\' => 19,
             'Illuminate\\Contracts\\' => 21,
         ),
         'H' => 
@@ -94,10 +91,6 @@ class ComposerStaticInit873464e4bd965a3168f133248b1b218b
         array (
             0 => __DIR__ . '/..' . '/twig/twig/src',
         ),
-        'Tightenco\\Collect\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/tightenco/collect/src/Collect',
-        ),
         'Symfony\\Polyfill\\Php80\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
@@ -113,10 +106,6 @@ class ComposerStaticInit873464e4bd965a3168f133248b1b218b
         'Symfony\\Contracts\\Translation\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/translation-contracts',
-        ),
-        'Symfony\\Component\\VarDumper\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/var-dumper',
         ),
         'Symfony\\Component\\Translation\\' => 
         array (
@@ -174,6 +163,12 @@ class ComposerStaticInit873464e4bd965a3168f133248b1b218b
         'LdapRecord\\' => 
         array (
             0 => __DIR__ . '/..' . '/directorytree/ldaprecord/src',
+        ),
+        'Illuminate\\Support\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/illuminate/macroable',
+            1 => __DIR__ . '/..' . '/illuminate/conditionable',
+            2 => __DIR__ . '/..' . '/illuminate/collections',
         ),
         'Illuminate\\Contracts\\' => 
         array (

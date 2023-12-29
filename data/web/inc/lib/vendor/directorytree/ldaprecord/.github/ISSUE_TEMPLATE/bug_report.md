@@ -7,9 +7,12 @@ assignees: ''
 
 ---
 
-<!-- Please update the below information with your environment. -->
+<!--
+  Please update the below information with your environment.
+  Issues filed without the below information will be closed.
+-->
 **Environment:**
  - LDAP Server Type: [e.g. ActiveDirectory / OpenLDAP / FreeIPA]
- - PHP Version: [e.g. 7.3 / 7.4 / 8.0]
+ - PHP Version: [e.g. 8.1 / 8.2]
 
 **Describe the bug:**

@@ -7,12 +7,10 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Twig\\' => array($vendorDir . '/twig/twig/src'),
-    'Tightenco\\Collect\\' => array($vendorDir . '/tightenco/collect/src/Collect'),
     'Symfony\\Polyfill\\Php80\\' => array($vendorDir . '/symfony/polyfill-php80'),
     'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
     'Symfony\\Polyfill\\Ctype\\' => array($vendorDir . '/symfony/polyfill-ctype'),
     'Symfony\\Contracts\\Translation\\' => array($vendorDir . '/symfony/translation-contracts'),
-    'Symfony\\Component\\VarDumper\\' => array($vendorDir . '/symfony/var-dumper'),
     'Symfony\\Component\\Translation\\' => array($vendorDir . '/symfony/translation'),
     'Stevenmaguire\\OAuth2\\Client\\' => array($vendorDir . '/stevenmaguire/oauth2-keycloak/src'),
     'RobThree\\Auth\\' => array($vendorDir . '/robthree/twofactorauth/lib'),
@@ -27,6 +25,7 @@ return array(
     'MatthiasMullie\\Minify\\' => array($vendorDir . '/matthiasmullie/minify/src'),
     'League\\OAuth2\\Client\\' => array($vendorDir . '/league/oauth2-client/src'),
     'LdapRecord\\' => array($vendorDir . '/directorytree/ldaprecord/src'),
+    'Illuminate\\Support\\' => array($vendorDir . '/illuminate/macroable', $vendorDir . '/illuminate/conditionable', $vendorDir . '/illuminate/collections'),
     'Illuminate\\Contracts\\' => array($vendorDir . '/illuminate/contracts'),
     'Html2Text\\' => array($vendorDir . '/soundasleep/html2text/src'),
     'GuzzleHttp\\Psr7\\' => array($vendorDir . '/guzzlehttp/psr7/src'),
