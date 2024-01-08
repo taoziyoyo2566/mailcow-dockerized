@@ -2060,7 +2060,7 @@ function identity_provider($_action, $_data = null, $_extra = null) {
           $_data['import_users']      = isset($_data['import_users']) ? intval($_data['import_users']) : 0;
           $_data['sync_interval']     = (!empty($_data['sync_interval'])) ? intval($_data['sync_interval']) : 15;
           $_data['sync_interval']     = $_data['sync_interval'] < 1 ? 1 : $_data['sync_interval'];
-          $required_settings          = array('authsource', 'host', 'port', 'basedn', 'username_field', 'attribute_field', 'binddn', 'bindpass');
+          $required_settings          = array('authsource', 'host', 'port', 'basedn', 'username_field', 'attribute_field', 'binddn', 'bindpass', 'periodic_sync', 'import_users', 'sync_interval');
         break;
       }
       

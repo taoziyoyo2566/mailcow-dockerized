@@ -72,7 +72,7 @@ $_SESSION['acl']['mailbox_relayhost'] = "1";
 // Init Keycloak Provider
 $iam_provider = identity_provider('init');
 $iam_settings = identity_provider('get');
-if (intval($iam_settings['periodic_sync']) != 1 && $iam_settings['import_users'] != 1) {
+if ($iam_settings['authsource'] != "keycloak" || (intval($iam_settings['periodic_sync']) != 1 && $iam_settings['import_users'] != 1)) {
   session_destroy();
   exit;
 }
