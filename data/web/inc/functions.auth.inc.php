@@ -401,7 +401,7 @@ function keycloak_mbox_login_rest($user, $pass, $iam_settings, $extra = null){
     'domain' => explode('@', $user)[1],
     'local_part' => explode('@', $user)[0],
     'authsource' => 'keycloak',
-    'template' => $iam_settings['mappers'][$mapper_key]
+    'template' => $iam_settings['templates'][$mapper_key]
   ));
   if (!$create_res) return false;
 
@@ -462,7 +462,7 @@ function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
     'domain' => explode('@', $user)[1],
     'local_part' => explode('@', $user)[0],
     'authsource' => 'ldap',
-    'template' => $iam_settings['mappers'][$mapper_key]
+    'template' => $iam_settings['templates'][$mapper_key]
   ));
   if (!$create_res) return false;
 
