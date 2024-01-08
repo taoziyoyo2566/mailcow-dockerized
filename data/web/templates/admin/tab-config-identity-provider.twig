@@ -309,6 +309,18 @@
             </div>
           </div>
           <div class="row mb-2">
+            <label class="control-label col-md-3 text-sm-end" for="iam_ldap_username_field">{{ lang.admin.iam_username_field }}:</label>
+            <div class="col-12 col-md-9 col-lg-4">
+              <input type="text" class="form-control" placeholder="mail" id="iam_ldap_username_field" name="username_field" value="{{ iam_settings.username_field }}">
+            </div>
+          </div>
+          <div class="row mb-2">
+            <label class="control-label col-md-3 text-sm-end" for="iam_ldap_attribute_field">{{ lang.admin.iam_attribute_field }}:</label>
+            <div class="col-12 col-md-9 col-lg-4">
+              <input type="text" class="form-control" id="iam_ldap_attribute_field" name="attribute_field" value="{{ iam_settings.attribute_field }}" required>
+            </div>
+          </div>
+          <div class="row mb-2">
             <label class="control-label col-md-3 text-sm-end" for="iam_ldap_binddn">{{ lang.admin.iam_binddn }}:</label>
             <div class="col-12 col-md-9 col-lg-4">
               <input type="text" class="form-control" id="iam_ldap_binddn" name="binddn" value="{{ iam_settings.binddn }}" required>
@@ -316,8 +328,11 @@
           </div>
           <div class="row mb-4">
             <label class="control-label col-md-3 text-sm-end" for="iam_ldap_bindpass">{{ lang.admin.iam_bindpass }}:</label>
-            <div class="col-sm-4">
-              <input type="text" class="form-control" id="iam_ldap_bindpass" name="bindpass" value="{{ iam_settings.bindpass }}" required>
+            <div class="col-12 col-md-9 col-lg-4">
+              <div class="reveal-password-input input-group">
+                <input type="password" class="password-field form-control" id="iam_ldap_bindpass" name="bindpass" value="{{ iam_settings.bindpass }}" required>
+                <button class="toggle-password btn btn-secondary" type="button"><i class="bi bi-eye"></i></button>
+              </div>
             </div>
           </div>
           <div class="row mb-2">

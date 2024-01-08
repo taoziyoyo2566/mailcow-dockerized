@@ -2042,7 +2042,7 @@ function identity_provider($_action, $_data = null, $_extra = null) {
           $_data['mailpassword_flow'] = isset($_data['mailpassword_flow']) ? intval($_data['mailpassword_flow']) : 0;
           $_data['periodic_sync']     = isset($_data['periodic_sync']) ? intval($_data['periodic_sync']) : 0;
           $_data['import_users']      = isset($_data['import_users']) ? intval($_data['import_users']) : 0;
-          $_data['sync_interval']     = isset($_data['sync_interval']) ? intval($_data['sync_interval']) : 15;
+          $_data['sync_interval']     = (!empty($_data['sync_interval'])) ? intval($_data['sync_interval']) : 15;
           $_data['sync_interval']     = $_data['sync_interval'] < 1 ? 1 : $_data['sync_interval'];
           $required_settings          = array('authsource', 'server_url', 'realm', 'client_id', 'client_secret', 'redirect_url', 'version', 'mailpassword_flow', 'periodic_sync', 'import_users', 'sync_interval');
         break;
@@ -2054,12 +2054,13 @@ function identity_provider($_action, $_data = null, $_extra = null) {
           $required_settings          = array('authsource', 'authorize_url', 'token_url', 'client_id', 'client_secret', 'redirect_url', 'userinfo_url', 'client_scopes');
         break;
         case "ldap":
-          $_data['port']              = isset($_data['port']) ? intval($_data['port']) : 389;
+          $_data['port']              = (!empty($_data['port'])) ? intval($_data['port']) : 389;
+          $_data['username_field']    = (!empty($_data['username_field'])) ? $_data['username_field'] : "mail";
           $_data['periodic_sync']     = isset($_data['periodic_sync']) ? intval($_data['periodic_sync']) : 0;
           $_data['import_users']      = isset($_data['import_users']) ? intval($_data['import_users']) : 0;
-          $_data['sync_interval']     = isset($_data['sync_interval']) ? intval($_data['sync_interval']) : 15;
+          $_data['sync_interval']     = (!empty($_data['sync_interval'])) ? intval($_data['sync_interval']) : 15;
           $_data['sync_interval']     = $_data['sync_interval'] < 1 ? 1 : $_data['sync_interval'];
-          $required_settings          = array('authsource', 'host', 'port', 'basedn', 'binddn', 'bindpass');
+          $required_settings          = array('authsource', 'host', 'port', 'basedn', 'username_field', 'attribute_field', 'binddn', 'bindpass');
         break;
       }
       

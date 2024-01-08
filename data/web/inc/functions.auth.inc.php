@@ -432,7 +432,7 @@ function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
   }
 
   $user_res = $iam_provider->query()
-    ->where('samaccountname', '=', $user)
+    ->where($iam_settings['username_field'], '=', $user)
     ->firstOrFail();
   if (!$iam_provider->auth()->attempt($user_res['distinguishedname'][0], $pass)) {
     return false;
@@ -440,7 +440,7 @@ function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
 
   // get mapped template, if not set return false
   // also return false if no mappers were defined
-  $user_template = $user_res['mailcow_template'][0];
+  $user_template = $user_res[$iam_settings['attribute_field']][0];
   if ($create && (empty($iam_settings['mappers']) || !$user_template)){
     return false;
   } else if (!$create) {
@@ -461,7 +461,7 @@ function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
   $create_res = mailbox('add', 'mailbox_from_template', array(
     'domain' => explode('@', $user)[1],
     'local_part' => explode('@', $user)[0],
-    'authsource' => 'keycloak',
+    'authsource' => 'ldap',
     'template' => $iam_settings['mappers'][$mapper_key]
   ));
   if (!$create_res) return false;
