@@ -18,7 +18,7 @@ try {
   $pdo = new PDO($dsn, $database_user, $database_pass, $opt);
 }
 catch (PDOException $e) {
-  logMsg("danger", $e->getMessage());
+  logMsg("err", $e->getMessage());
   session_destroy();
   exit;
 }
@@ -127,18 +127,18 @@ while (true) {
   curl_close($ch);
   
   if ($code != 200){
-    logMsg("danger", "Recieved HTTP {$code}");
+    logMsg("err", "Recieved HTTP {$code}");
     session_destroy();
     exit;
   }
   try {
     $response = json_decode($response, true);
   } catch (Exception $e) {
-    logMsg("danger", $e->getMessage());
+    logMsg("err", $e->getMessage());
     break;
   }
   if (!is_array($response)){
-    logMsg("danger", "Recieved malformed response from keycloak api");
+    logMsg("err", "Recieved malformed response from keycloak api");
     break;
   }
   if (count($response) == 0) {

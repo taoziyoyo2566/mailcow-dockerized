@@ -18,7 +18,7 @@ try {
   $pdo = new PDO($dsn, $database_user, $database_pass, $opt);
 }
 catch (PDOException $e) {
-  logMsg("danger", $e->getMessage());
+  logMsg("err", $e->getMessage());
   session_destroy();
   exit;
 }
