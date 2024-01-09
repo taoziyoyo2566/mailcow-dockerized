@@ -287,7 +287,7 @@
           </div>
         </form>
       </div>
-      <div id="ldap_settings" class="{% if not iam_settings.authsource and iam_settings.authsource != 'ldap' %}d-none{% endif %}">
+      <div id="ldap_settings" class="{% if not iam_settings.authsource or iam_settings.authsource != 'ldap' %}d-none{% endif %}">
         <form class="form-horizontal" autocapitalize="none" data-id="iam_ldap" autocorrect="off" role="form" method="post">
           <input type="hidden" name="authsource" value="ldap">
           <div class="row mb-2">

@@ -217,7 +217,7 @@
         "iam_client_id": "Client ID",
         "iam_client_secret": "Client Secret",
         "iam_client_scopes": "Client Scopes",
-        "iam_description": "Configure an external OIDC Provider for Authentication<br>User's mailboxes will be automatically created upon their first login, provided that an attribute mapping has been set.",
+        "iam_description": "Configure an external Provider for Authentication<br>User's mailboxes will be automatically created upon their first login, provided that an attribute mapping has been set.",
         "iam_extra_permission": "For the following settings to work, the mailcow client in Keycloak needs a <code>Service account</code> and the permission to <code>view-users</code>.",
         "iam_host": "Host",
         "iam_import_users": "Import Users",
