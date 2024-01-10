@@ -53,10 +53,12 @@ if (isset($_POST["verify_tfa_login"])) {
     unset($_SESSION['pending_tfa_methods']);
 
     $user_details = mailbox("get", "mailbox_details", $_SESSION['pending_mailcow_cc_username']);
-    if (intval($user_details['attributs']['sogo_access']) == 1) {
+    if (intval($user_details['attributes']['sogo_access']) == 1) {
       header("Location: /SOGo/so/{$_SESSION['pending_mailcow_cc_username']}");
+      die();
     } else {
       header("Location: /user");
+      die();
     }
   } else {
     unset($_SESSION['pending_mailcow_cc_username']);
@@ -118,10 +120,12 @@ if (isset($_POST["login_user"]) && isset($_POST["pass_user"])) {
     $_SESSION[$session_var_pass] = $sogo_sso_pass;
 
     $user_details = mailbox("get", "mailbox_details", $login_user);
-    if (intval($user_details['attributs']['sogo_access']) == 1) {
+    if (intval($user_details['attributes']['sogo_access']) == 1) {
       header("Location: /SOGo/so/{$login_user}");
+      die();
     } else {
       header("Location: /user");
+      die();
     }
 	}
 	elseif ($as != "pending") {
