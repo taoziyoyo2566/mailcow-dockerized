@@ -122,8 +122,8 @@ $SHOW_DKIM_PRIV_KEYS = false;
 $MAILCOW_APPS = array(
   array(
     'name' => 'Webmail',
-    'link' => '/SOGo',
-    'user_link' => '/SOGo',
+    'link' => '/SOGo/so',
+    'user_link' => '/SOGo/so',
     'hide' => true
   )
 );
