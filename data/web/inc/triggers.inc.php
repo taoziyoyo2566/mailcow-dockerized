@@ -106,6 +106,31 @@ if (isset($_POST["login_user"]) && isset($_POST["pass_user"])) {
 		unset($_SESSION['mailcow_cc_role']);
 	}
 }
+if (isset($_POST["login_user_webmail"]) && isset($_POST["pass_user_webmail"])) {
+	$login_user = strtolower(trim($_POST["login_user_webmail"]));
+	$as = check_login($login_user, $_POST["pass_user_webmail"], false, array("role" => "user"));
+
+	if ($as == "user") {
+		$_SESSION['mailcow_cc_username'] = $login_user;
+		$_SESSION['mailcow_cc_role'] = "user";
+    $session_var_user_allowed = 'sogo-sso-user-allowed';
+    $session_var_pass = 'sogo-sso-pass';
+    // load master password
+    $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
+    // register username and password in session
+    $_SESSION[$session_var_user_allowed][] = $_SESSION['mailcow_cc_username'];
+    $_SESSION[$session_var_pass] = $sogo_sso_pass;
+		header("Location: /SOGo/so/{$_SESSION['mailcow_cc_username']}");
+    exit();
+	}
+	elseif ($as != "pending") {
+    unset($_SESSION['pending_mailcow_cc_username']);
+    unset($_SESSION['pending_mailcow_cc_role']);
+    unset($_SESSION['pending_tfa_methods']);
+		unset($_SESSION['mailcow_cc_username']);
+		unset($_SESSION['mailcow_cc_role']);
+	}
+}
 
 if (isset($_SESSION['mailcow_cc_role']) && (isset($_SESSION['acl']['login_as']) && $_SESSION['acl']['login_as'] == "1")) {
 	if (isset($_GET["duallogin"])) {
