@@ -4,22 +4,31 @@ function check_login($user, $pass, $app_passwd_data = false, $extra = null) {
   global $redis;
   
   $is_internal = $extra['is_internal'];
+  $role = $extra['role'];
 
   // Try validate admin
-  $result = admin_login($user, $pass);
-  if ($result !== false) return $result;
+  if (!isset($role) || $role == "admin") {
+    $result = admin_login($user, $pass);
+    if ($result !== false) return $result;
+  }
 
   // Try validate domain admin
-  $result = domainadmin_login($user, $pass);
-  if ($result !== false) return $result;
+  if (!isset($role) || $role == "domain_admin") {
+    $result = domainadmin_login($user, $pass);
+    if ($result !== false) return $result;
+  }
 
   // Try validate user
-  $result = user_login($user, $pass);
-  if ($result !== false) return $result;
+  if (!isset($role) || $role == "user") {
+    $result = user_login($user, $pass);
+    if ($result !== false) return $result;
+  }
 
   // Try validate app password
-  $result = apppass_login($user, $pass, $app_passwd_data);
-  if ($result !== false) return $result;
+  if (!isset($role) || $role == "app") {
+    $result = apppass_login($user, $pass, $app_passwd_data);
+    if ($result !== false) return $result;
+  }
 
   // skip log and only return false if it's an internal request
   if ($is_internal == true) return false;
