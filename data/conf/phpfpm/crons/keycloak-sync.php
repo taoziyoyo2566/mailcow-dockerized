@@ -68,6 +68,7 @@ $_SESSION['acl']['ratelimit'] = "1";
 $_SESSION['acl']['sogo_access'] = "1";
 $_SESSION['acl']['protocol_access'] = "1";
 $_SESSION['acl']['mailbox_relayhost'] = "1";
+$_SESSION['acl']['unlimited_quota'] = "1";
 
 // Init Keycloak Provider
 $iam_provider = identity_provider('init');
@@ -181,7 +182,7 @@ while (true) {
       }
     }
     if (!$mbox_template){
-      logMsg("warning", "No matching mapper found for mailbox_template");
+      logMsg("warning", "No matching attribute mapping found for user " . $user['email']);
       continue;
     }
 
