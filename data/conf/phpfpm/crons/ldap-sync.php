@@ -113,7 +113,7 @@ fclose($lock_file_handle);
 $response = $iam_provider->query()
   ->where($iam_settings['username_field'], "*")
   ->where($iam_settings['attribute_field'], "*")
-  ->select([$iam_settings['username_field'], $iam_settings['attribute_field'], 'cn'])
+  ->select([$iam_settings['username_field'], $iam_settings['attribute_field'], 'displayname'])
   ->paginate($max);
 
 // Process the users
@@ -148,7 +148,7 @@ foreach ($response as $user) {
     mailbox('add', 'mailbox_from_template', array(
       'domain' => explode('@',  $user[$iam_settings['username_field']][0])[1],
       'local_part' => explode('@',  $user[$iam_settings['username_field']][0])[0],
-      'name' => $user['cn'][0],
+      'name' => $user['displayname'][0],
       'authsource' => 'ldap',
       'template' => $mbox_template
     ));
@@ -157,7 +157,7 @@ foreach ($response as $user) {
     logMsg("info", "Syncing attributes for user " . $user[$iam_settings['username_field']][0]);
     mailbox('edit', 'mailbox_from_template', array(
       'username' =>  $user[$iam_settings['username_field']][0],
-      'name' => $user['cn'][0],
+      'name' => $user['displayname'][0],
       'template' => $mbox_template
     ));
   } else {
