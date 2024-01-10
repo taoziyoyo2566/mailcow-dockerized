@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var loginForm = document.forms.namedItem("loginForm");
     if (loginForm) {
-        window.location.href = '/user';
+        window.location.href = '/';
     }
 
     angularReady = false;
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const toolbarElement = document.body.querySelector('.md-toolbar-tools.sg-toolbar-group-last.layout-align-end-center.layout-row');
 
-            var htmlCode = '<a class="md-icon-button md-button md-ink-ripple" aria-label="mailcow" href="/" aria-hidden="false" tabindex="-1">' +
+            var htmlCode = '<a class="md-icon-button md-button md-ink-ripple" aria-label="mailcow" href="/user" aria-hidden="false" tabindex="-1">' +
                 '<md-icon class="material-icons" role="img" aria-label="arrow_back">arrow_back</md-icon>' +
                 '</a><a class="md-icon-button md-button md-ink-ripple" aria-label="mailcow" href="#" onclick="logout.submit()" aria-hidden="false" tabindex="-1">' +
                 '<md-icon class="material-icons" role="img" aria-label="settings_power">settings_power</md-icon>' +
