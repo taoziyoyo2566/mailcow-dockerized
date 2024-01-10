@@ -205,15 +205,77 @@ function user_login($user, $pass, $extra = null){
       $iam_settings = identity_provider('get');
       if (intval($iam_settings['mailpassword_flow']) == 1){
         $result = keycloak_mbox_login_rest($user, $pass, $iam_settings, array('is_internal' => $is_internal));
+        if ($result !== false) {
+          // check for tfa authenticators
+          $authenticators = get_tfa($user);
+          if (isset($authenticators['additional']) && is_array($authenticators['additional']) && count($authenticators['additional']) > 0 && !$is_internal) {
+            // authenticators found, init TFA flow
+            $_SESSION['pending_mailcow_cc_username'] = $user;
+            $_SESSION['pending_mailcow_cc_role'] = "user";
+            $_SESSION['pending_tfa_methods'] = $authenticators['additional'];
+            unset($_SESSION['ldelay']);
+            $_SESSION['return'][] =  array(
+              'type' => 'success',
+              'log' => array(__FUNCTION__, $user, '*'),
+              'msg' => array('logged_in_as', $user)
+            );
+            return "pending";
+          } else if (!isset($authenticators['additional']) || !is_array($authenticators['additional']) || count($authenticators['additional']) == 0) {
+            // no authenticators found, login successfull
+            if (!$is_internal){
+              unset($_SESSION['ldelay']);
+              // Reactivate TFA if it was set to "deactivate TFA for next login"
+              $stmt = $pdo->prepare("UPDATE `tfa` SET `active`='1' WHERE `username` = :user");
+              $stmt->execute(array(':user' => $user));
+              $_SESSION['return'][] =  array(
+                'type' => 'success',
+                'log' => array(__FUNCTION__, $user, '*'),
+                'msg' => array('logged_in_as', $user)
+              );
+            }
+            return "user";
+          }
+        }
         return $result;
       } else {
         return false;
       }
     break;
     case 'ldap':
-      // user authsource is ldap, try using via rest flow
+      // user authsource is ldap
       $iam_settings = identity_provider('get');
       $result = ldap_mbox_login($user, $pass, $iam_settings, array('is_internal' => $is_internal));
+      if ($result !== false) {
+        // check for tfa authenticators
+        $authenticators = get_tfa($user);
+        if (isset($authenticators['additional']) && is_array($authenticators['additional']) && count($authenticators['additional']) > 0 && !$is_internal) {
+          // authenticators found, init TFA flow
+          $_SESSION['pending_mailcow_cc_username'] = $user;
+          $_SESSION['pending_mailcow_cc_role'] = "user";
+          $_SESSION['pending_tfa_methods'] = $authenticators['additional'];
+          unset($_SESSION['ldelay']);
+          $_SESSION['return'][] =  array(
+            'type' => 'success',
+            'log' => array(__FUNCTION__, $user, '*'),
+            'msg' => array('logged_in_as', $user)
+          );
+          return "pending";
+        } else if (!isset($authenticators['additional']) || !is_array($authenticators['additional']) || count($authenticators['additional']) == 0) {
+          // no authenticators found, login successfull
+          if (!$is_internal){
+            unset($_SESSION['ldelay']);
+            // Reactivate TFA if it was set to "deactivate TFA for next login"
+            $stmt = $pdo->prepare("UPDATE `tfa` SET `active`='1' WHERE `username` = :user");
+            $stmt->execute(array(':user' => $user));
+            $_SESSION['return'][] =  array(
+              'type' => 'success',
+              'log' => array(__FUNCTION__, $user, '*'),
+              'msg' => array('logged_in_as', $user)
+            );
+          }
+          return "user";
+        }
+      }
       return $result;
     break;
     default:
@@ -393,11 +455,6 @@ function keycloak_mbox_login_rest($user, $pass, $iam_settings, $extra = null){
     return false;
   } else if (!$create) {
     // login success - dont create mailbox
-    $_SESSION['return'][] =  array(
-      'type' => 'success',
-      'log' => array(__FUNCTION__, $user, '*'),
-      'msg' => array('logged_in_as', $user)
-    );
     return 'user';
   }
 
@@ -415,12 +472,6 @@ function keycloak_mbox_login_rest($user, $pass, $iam_settings, $extra = null){
   ));
   if (!$create_res) return false;
 
-
-  $_SESSION['return'][] =  array(
-    'type' => 'success',
-    'log' => array(__FUNCTION__, $user, '*'),
-    'msg' => array('logged_in_as', $user)
-  );
   return 'user';
 }
 function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
@@ -460,11 +511,6 @@ function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
     return false;
   } else if (!$create) {
     // login success - dont create mailbox
-    $_SESSION['return'][] =  array(
-      'type' => 'success',
-      'log' => array(__FUNCTION__, $user, '*'),
-      'msg' => array('logged_in_as', $user)
-    );
     return 'user';
   }
 
@@ -482,11 +528,5 @@ function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
   ));
   if (!$create_res) return false;
 
-
-  $_SESSION['return'][] =  array(
-    'type' => 'success',
-    'log' => array(__FUNCTION__, $user, '*'),
-    'msg' => array('logged_in_as', $user)
-  );
   return 'user';
 }

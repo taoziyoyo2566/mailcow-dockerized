@@ -16,10 +16,16 @@ elseif (isset($_SESSION['mailcow_cc_role']) && $_SESSION['mailcow_cc_role'] == '
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/inc/header.inc.php';
 
+$has_iam_sso = false;
+$iam_settings = identity_provider("get");
+if (isset($iam_settings['authsource']) && $iam_settings['authsource'] != "ldap"){
+  $has_iam_sso = true;
+}
+
 $template = 'webmail.twig';
 $template_data = [
   'login_delay' => @$_SESSION['ldelay'],
-  'has_iam_sso' => ($iam_provider) ? true : false
+  'has_iam_sso' => $has_iam_sso
 ];
 
 $js_minifier->add('/web/js/site/webmail.js');
