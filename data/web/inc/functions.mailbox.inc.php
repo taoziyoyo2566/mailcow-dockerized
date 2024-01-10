@@ -3262,12 +3262,13 @@ function mailbox($_action, $_type, $_data = null, $_extra = null) {
 
           $attribute_hash = sha1(json_encode($mbox_template_data["attributes"]));
           $is_now = mailbox('get', 'mailbox_details', $_data['username']);
-          if ($is_now['attributes']['attribute_hash'] == $attribute_hash)
+          $name = ltrim(rtrim($_data['name'], '>'), '<');
+          if ($is_now['attributes']['attribute_hash'] == $attribute_hash && $is_now['name'] == $name)
             return true;
 
           $mbox_template_data = json_decode($mbox_template_data["attributes"], true);
           $mbox_template_data['attribute_hash'] = $attribute_hash;
-          $mbox_template_data['name'] = ltrim(rtrim($_data['name'], '>'), '<');
+          $mbox_template_data['name'] = $name;
           $quarantine_attributes = array('username' => $_data['username']);
           $tls_attributes = array('username' => $_data['username']);
           $ratelimit_attributes = array('object' => $_data['username']);
