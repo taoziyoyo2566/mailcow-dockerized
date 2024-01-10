@@ -1,7 +1,7 @@
 // redirect to mailcow login form
 var loginForm = document.forms.namedItem("loginForm");
 if (loginForm) {
-    window.location.href = '/SOGo';
+    window.location.href = '/webmail';
 }
 
 // Custom SOGo JS
