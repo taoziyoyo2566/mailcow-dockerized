@@ -73,7 +73,7 @@ $_SESSION['acl']['unlimited_quota'] = "1";
 // Init Keycloak Provider
 $iam_provider = identity_provider('init');
 $iam_settings = identity_provider('get');
-if ($iam_settings['authsource'] != "keycloak" || (intval($iam_settings['periodic_sync']) != 1 && $iam_settings['import_users'] != 1)) {
+if ($iam_settings['authsource'] != "keycloak" || (intval($iam_settings['periodic_sync']) != 1 && intval($iam_settings['import_users']) != 1)) {
   session_destroy();
   exit;
 }
@@ -196,7 +196,7 @@ while (true) {
         'authsource' => 'keycloak',
         'template' => $mbox_template
       ));
-    } else if ($row) {
+    } else if ($row && intval($iam_settings['periodic_sync']) == 1) {
       // mailbox user does exist, sync attribtues...
       logMsg("info", "Syncing attributes for user " . $user['email']);
       mailbox('edit', 'mailbox_from_template', array(
