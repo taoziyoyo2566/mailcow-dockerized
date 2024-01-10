@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var loginForm = document.forms.namedItem("loginForm");
     if (loginForm) {
-        window.location.href = '/';
+        window.location.href = '/user';
     }
 
     angularReady = false;

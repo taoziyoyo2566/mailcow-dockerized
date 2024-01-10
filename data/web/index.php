@@ -16,7 +16,7 @@ elseif (isset($_SESSION['mailcow_cc_role']) && $_SESSION['mailcow_cc_role'] == '
   exit();
 }
 elseif (isset($_SESSION['mailcow_cc_role']) && $_SESSION['mailcow_cc_role'] == 'user') {    
-  $user_details = mailbox("get", "mailbox_details", $_SESSION['mailcow_cc_role']);
+  $user_details = mailbox("get", "mailbox_details", $_SESSION['mailcow_cc_username']);
   if (intval($user_details['attributes']['sogo_access']) == 1) {
     header("Location: /SOGo/so/{$_SESSION['mailcow_cc_role']}");
   } else {
