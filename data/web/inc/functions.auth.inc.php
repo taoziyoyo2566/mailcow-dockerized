@@ -400,6 +400,7 @@ function keycloak_mbox_login_rest($user, $pass, $iam_settings, $extra = null){
   $create_res = mailbox('add', 'mailbox_from_template', array(
     'domain' => explode('@', $user)[1],
     'local_part' => explode('@', $user)[0],
+    'name' => $user_res['firstName'] . " " . $user_res['lastName'],
     'authsource' => 'keycloak',
     'template' => $iam_settings['templates'][$mapper_key]
   ));

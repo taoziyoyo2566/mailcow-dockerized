@@ -192,6 +192,7 @@ while (true) {
       mailbox('add', 'mailbox_from_template', array(
         'domain' => explode('@', $user['email'])[1],
         'local_part' => explode('@', $user['email'])[0],
+        'name' => $user['firstName'] . " " . $user['lastName'],
         'authsource' => 'keycloak',
         'template' => $mbox_template
       ));
@@ -200,6 +201,7 @@ while (true) {
       logMsg("info", "Syncing attributes for user " . $user['email']);
       mailbox('edit', 'mailbox_from_template', array(
         'username' => $user['email'],
+        'name' => $user['firstName'] . " " . $user['lastName'],
         'template' => $mbox_template
       ));
     } else {

@@ -2309,6 +2309,7 @@ function identity_provider($_action, $_data = null, $_extra = null) {
       $create_res = mailbox('add', 'mailbox_from_template', array(
         'domain' => explode('@', $info['email'])[1],
         'local_part' => explode('@', $info['email'])[0],
+        'name' => $info['firstName'] . " " . $info['lastName'],
         'authsource' => identity_provider('get')['authsource'],
         'template' => $provider['templates'][$mapper_key]
       ));
