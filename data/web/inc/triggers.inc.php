@@ -53,7 +53,7 @@ if (isset($_POST["verify_tfa_login"])) {
     unset($_SESSION['pending_tfa_methods']);
 
     $user_details = mailbox("get", "mailbox_details", $_SESSION['pending_mailcow_cc_username']);
-    if ($user_details['attributs']['sogo_access'] == 1) {
+    if (intval($user_details['attributs']['sogo_access']) == 1) {
       header("Location: /SOGo/so/{$_SESSION['pending_mailcow_cc_username']}");
     } else {
       header("Location: /user");
@@ -82,10 +82,10 @@ if (isset($_POST["quick_delete"])) {
 }
 
 if (isset($_POST["login_user"]) && isset($_POST["pass_user"])) {
-	$login_user = strtolower(trim($_POST["login_user"]));
-	$as = check_login($login_user, $_POST["pass_user"]);
+  $login_user = strtolower(trim($_POST["login_user"]));
+  $as = check_login($login_user, $_POST["pass_user"]);
 
-	if ($as == "admin") {
+  if ($as == "admin") {
 		$_SESSION['mailcow_cc_username'] = $login_user;
 		$_SESSION['mailcow_cc_role'] = "admin";
 		header("Location: /admin");
@@ -96,13 +96,6 @@ if (isset($_POST["login_user"]) && isset($_POST["pass_user"])) {
 		header("Location: /mailbox");
 	}
 	elseif ($as == "user") {
-    $session_var_user_allowed = 'sogo-sso-user-allowed';
-    $session_var_pass = 'sogo-sso-pass';
-    // load master password
-    $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
-    // register username and password in session
-    $_SESSION[$session_var_user_allowed][] = $login_user;
-    $_SESSION[$session_var_pass] = $sogo_sso_pass;
 		$_SESSION['mailcow_cc_username'] = $login_user;
 		$_SESSION['mailcow_cc_role'] = "user";
     $http_parameters = explode('&', $_SESSION['index_query_string']);
@@ -116,8 +109,16 @@ if (isset($_POST["login_user"]) && isset($_POST["pass_user"])) {
         die();
     }
 
+    $session_var_user_allowed = 'sogo-sso-user-allowed';
+    $session_var_pass = 'sogo-sso-pass';
+    // load master password
+    $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
+    // register username and password in session
+    $_SESSION[$session_var_user_allowed][] = $login_user;
+    $_SESSION[$session_var_pass] = $sogo_sso_pass;
+
     $user_details = mailbox("get", "mailbox_details", $login_user);
-    if ($user_details['attributs']['sogo_access'] == 1) {
+    if (intval($user_details['attributs']['sogo_access']) == 1) {
       header("Location: /SOGo/so/{$login_user}");
     } else {
       header("Location: /user");
