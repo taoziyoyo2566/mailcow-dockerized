@@ -431,9 +431,14 @@ function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
     return false;
   }
 
-  $user_res = $iam_provider->query()
-    ->where($iam_settings['username_field'], '=', $user)
-    ->firstOrFail();
+  try {
+    $user_res = $iam_provider->query()
+      ->where($iam_settings['username_field'], '=', $user)
+      ->select([$iam_settings['username_field'], $iam_settings['attribute_field'], 'cn', 'distinguishedname'])
+      ->firstOrFail();
+  } catch (Exception $e) {
+    return false;
+  }
   if (!$iam_provider->auth()->attempt($user_res['distinguishedname'][0], $pass)) {
     return false;
   }
@@ -461,6 +466,7 @@ function ldap_mbox_login($user, $pass, $iam_settings, $extra = null){
   $create_res = mailbox('add', 'mailbox_from_template', array(
     'domain' => explode('@', $user)[1],
     'local_part' => explode('@', $user)[0],
+    'name' => $user_res['cn'][0],
     'authsource' => 'ldap',
     'template' => $iam_settings['templates'][$mapper_key]
   ));

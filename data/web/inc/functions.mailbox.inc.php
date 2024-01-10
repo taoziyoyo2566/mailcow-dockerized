@@ -1338,6 +1338,7 @@ function mailbox($_action, $_type, $_data = null, $_extra = null) {
           $mbox_template_data['domain'] = $_data['domain'];
           $mbox_template_data['local_part'] = $_data['local_part'];
           $mbox_template_data['authsource'] = $_data['authsource'];
+          $mbox_template_data['name']       = ltrim(rtrim($_data['name'], '>'), '<');
           $mbox_template_data['attribute_hash'] = $attribute_hash;
           $mbox_template_data['quota'] = intval($mbox_template_data['quota'] / 1048576);
         
@@ -3266,6 +3267,7 @@ function mailbox($_action, $_type, $_data = null, $_extra = null) {
 
           $mbox_template_data = json_decode($mbox_template_data["attributes"], true);
           $mbox_template_data['attribute_hash'] = $attribute_hash;
+          $mbox_template_data['name'] = ltrim(rtrim($_data['name'], '>'), '<');
           $quarantine_attributes = array('username' => $_data['username']);
           $tls_attributes = array('username' => $_data['username']);
           $ratelimit_attributes = array('object' => $_data['username']);
