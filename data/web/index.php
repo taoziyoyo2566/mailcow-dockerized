@@ -15,8 +15,13 @@ elseif (isset($_SESSION['mailcow_cc_role']) && $_SESSION['mailcow_cc_role'] == '
   header('Location: /mailbox');
   exit();
 }
-elseif (isset($_SESSION['mailcow_cc_role']) && $_SESSION['mailcow_cc_role'] == 'user') {
-  header('Location: /user');
+elseif (isset($_SESSION['mailcow_cc_role']) && $_SESSION['mailcow_cc_role'] == 'user') {    
+  $user_details = mailbox("get", $_SESSION['mailcow_cc_role']);
+  if ($user_details['attributs']['sogo_access'] == 1) {
+    header("Location: /SOGo/so/{$_SESSION['mailcow_cc_role']}");
+  } else {
+    header("Location: /user");
+  }
   exit();
 }
 

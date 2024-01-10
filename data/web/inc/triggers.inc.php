@@ -41,20 +41,20 @@ if (isset($_POST["verify_tfa_login"])) {
   if (verify_tfa_login($_SESSION['pending_mailcow_cc_username'], $_POST)) {
     $_SESSION['mailcow_cc_username'] = $_SESSION['pending_mailcow_cc_username'];
     $_SESSION['mailcow_cc_role'] = $_SESSION['pending_mailcow_cc_role'];
+    $session_var_user_allowed = 'sogo-sso-user-allowed';
+    $session_var_pass = 'sogo-sso-pass';
+    // load master password
+    $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
+    // register username and password in session
+    $_SESSION[$session_var_user_allowed][] = $_SESSION['pending_mailcow_cc_username'];
+    $_SESSION[$session_var_pass] = $sogo_sso_pass;
     unset($_SESSION['pending_mailcow_cc_username']);
     unset($_SESSION['pending_mailcow_cc_role']);
     unset($_SESSION['pending_tfa_methods']);
 
-    if ($_SESSION['verify_tfa_login_webmail']){
-      unset($_SESSION['verify_tfa_login_webmail']);
-      $session_var_user_allowed = 'sogo-sso-user-allowed';
-      $session_var_pass = 'sogo-sso-pass';
-      // load master password
-      $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
-      // register username and password in session
-      $_SESSION[$session_var_user_allowed][] = $_SESSION['mailcow_cc_username'];
-      $_SESSION[$session_var_pass] = $sogo_sso_pass;
-      header("Location: /SOGo/so/{$_SESSION['mailcow_cc_username']}");
+    $user_details = mailbox("get", $_SESSION['pending_mailcow_cc_username']);
+    if ($user_details['attributs']['sogo_access'] == 1) {
+      header("Location: /SOGo/so/{$_SESSION['pending_mailcow_cc_username']}");
     } else {
       header("Location: /user");
     }
@@ -96,48 +96,33 @@ if (isset($_POST["login_user"]) && isset($_POST["pass_user"])) {
 		header("Location: /mailbox");
 	}
 	elseif ($as == "user") {
-		$_SESSION['mailcow_cc_username'] = $login_user;
-		$_SESSION['mailcow_cc_role'] = "user";
-        $http_parameters = explode('&', $_SESSION['index_query_string']);
-        unset($_SESSION['index_query_string']);
-        if (in_array('mobileconfig', $http_parameters)) {
-            if (in_array('only_email', $http_parameters)) {
-                header("Location: /mobileconfig.php?only_email");
-                die();
-            }
-            header("Location: /mobileconfig.php");
-            die();
-        }
-		header("Location: /user");
-	}
-	elseif ($as != "pending") {
-    unset($_SESSION['pending_mailcow_cc_username']);
-    unset($_SESSION['pending_mailcow_cc_role']);
-    unset($_SESSION['pending_tfa_methods']);
-		unset($_SESSION['mailcow_cc_username']);
-		unset($_SESSION['mailcow_cc_role']);
-	}
-}
-if (isset($_POST["login_user_webmail"]) && isset($_POST["pass_user_webmail"])) {
-	$login_user = strtolower(trim($_POST["login_user_webmail"]));
-	$as = check_login($login_user, $_POST["pass_user_webmail"], false, array("role" => "user"));
-
-	if ($as == "user") {
-		$_SESSION['mailcow_cc_username'] = $login_user;
-		$_SESSION['mailcow_cc_role'] = "user";
     $session_var_user_allowed = 'sogo-sso-user-allowed';
     $session_var_pass = 'sogo-sso-pass';
     // load master password
     $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
     // register username and password in session
-    $_SESSION[$session_var_user_allowed][] = $_SESSION['mailcow_cc_username'];
+    $_SESSION[$session_var_user_allowed][] = $login_user;
     $_SESSION[$session_var_pass] = $sogo_sso_pass;
-		header("Location: /SOGo/so/{$_SESSION['mailcow_cc_username']}");
-    exit();
+		$_SESSION['mailcow_cc_username'] = $login_user;
+		$_SESSION['mailcow_cc_role'] = "user";
+    $http_parameters = explode('&', $_SESSION['index_query_string']);
+    unset($_SESSION['index_query_string']);
+    if (in_array('mobileconfig', $http_parameters)) {
+        if (in_array('only_email', $http_parameters)) {
+            header("Location: /mobileconfig.php?only_email");
+            die();
+        }
+        header("Location: /mobileconfig.php");
+        die();
+    }
+
+    $user_details = mailbox("get", $login_user);
+    if ($user_details['attributs']['sogo_access'] == 1) {
+      header("Location: /SOGo/so/{$login_user}");
+    } else {
+      header("Location: /user");
+    }
 	}
-  elseif ($as == "pending") {
-    $_SESSION['verify_tfa_login_webmail'] = true;
-  }
 	elseif ($as != "pending") {
     unset($_SESSION['pending_mailcow_cc_username']);
     unset($_SESSION['pending_mailcow_cc_role']);
