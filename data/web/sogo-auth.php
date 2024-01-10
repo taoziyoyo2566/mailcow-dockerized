@@ -64,26 +64,6 @@ elseif (isset($_GET['login'])) {
         exit;
       }
     }
-  } else if (!isset($_SESSION['mailcow_cc_role']) && $_POST["password"]) {
-    if (check_login($login, $_POST["password"], false, array('role' => 'user'))) {
-      if (user_get_alias_details($login) !== false) {
-        // load master password
-        $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
-        // register username and password in session
-        $_SESSION[$session_var_user_allowed][] = $login;
-        $_SESSION[$session_var_pass] = $sogo_sso_pass;
-        // update sasl logs
-        $service = ($app_passwd_data['eas'] === true) ? 'EAS' : 'DAV';
-        $stmt = $pdo->prepare("REPLACE INTO sasl_log (`service`, `app_password`, `username`, `real_rip`) VALUES ('SSO', 0, :username, :remote_addr)");
-        $stmt->execute(array(
-          ':username' => $login,
-          ':remote_addr' => ($_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR'])
-        ));
-        // redirect to sogo (sogo will get the correct credentials via nginx auth_request
-        header("Location: /SOGo/so/{$login}");
-        exit;
-      }
-    }
   }
   header("Location: /SOGo/");
   exit;
