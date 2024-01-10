@@ -97,7 +97,7 @@
           </div>
 
           {# TFA #}
-          {% if mailboxdata.authsource == "mailcow" or mailboxdata.authsource == "ldap" %}
+          {% if mailboxdata.authsource == "mailcow" %}
           <legend class="mt-4">{{ lang.user.authentication }}</legend>
           <hr>
           <div class="row">
@@ -106,6 +106,9 @@
               <a class="btn btn-secondary" href="#pwChangeModal" data-bs-toggle="modal"><i class="bi bi-pencil-fill"></i> {{ lang.user.change_password }}</a>
             </div>
           </div>
+          {% endif %}
+          {# TFA #}
+          {% if mailboxdata.authsource == "mailcow" or mailboxdata.authsource == "ldap" %}
           <div class="row mt-4">
             <div class="col-12 col-md-3 d-flex">
               <span class="mt-2 w-100 text-md-end">{{ lang.tfa.tfa }}:</span>
