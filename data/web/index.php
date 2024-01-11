@@ -17,7 +17,8 @@ elseif (isset($_SESSION['mailcow_cc_role']) && $_SESSION['mailcow_cc_role'] == '
 }
 elseif (isset($_SESSION['mailcow_cc_role']) && $_SESSION['mailcow_cc_role'] == 'user') {    
   $user_details = mailbox("get", "mailbox_details", $_SESSION['mailcow_cc_username']);
-  if (intval($user_details['attributes']['sogo_access']) == 1) {
+  $is_dual = (!empty($_SESSION["dual-login"]["username"])) ? true : false;
+  if (intval($user_details['attributes']['sogo_access']) == 1 && !$is_dual) {
     header("Location: /SOGo/so/{$_SESSION['mailcow_cc_username']}");
   } else {
     header("Location: /user");
