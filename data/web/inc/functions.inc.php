@@ -849,13 +849,7 @@ function update_sogo_static_view($mailbox = null) {
         mailbox.username,
         mailbox.domain,
         mailbox.username,
-        CASE 
-          WHEN mailbox.authsource IS NOT NULL AND mailbox.authsource <> 'mailcow' THEN '{SSHA256}A123A123A321A321A321B321B321B123B123B321B432F123E321123123321321'
-          ELSE 
-            IF(JSON_UNQUOTE(JSON_VALUE(attributes, '$.force_pw_update')) = '0',
-              IF(JSON_UNQUOTE(JSON_VALUE(attributes, '$.sogo_access')) = 1, password, '{SSHA256}A123A123A321A321A321B321B321B123B123B321B432F123E321123123321321'),
-              '{SSHA256}A123A123A321A321A321B321B321B123B123B321B432F123E321123123321321')
-        END AS c_password,
+        SHA2(UUID(), 256),
         mailbox.name,
         mailbox.username,
         IFNULL(GROUP_CONCAT(ga.aliases ORDER BY ga.aliases SEPARATOR ' '), ''),
