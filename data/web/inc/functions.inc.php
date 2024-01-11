@@ -840,6 +840,11 @@ function update_sogo_static_view($mailbox = null) {
     }
   }
 
+  // generate random password for sogo to deny direct login
+  $random_password = base64_encode(openssl_random_pseudo_bytes(24));
+  $random_salt = base64_encode(openssl_random_pseudo_bytes(16));
+  $random_hash = '{SSHA256}' . base64_encode(hash('sha256', base64_decode($password) . $salt, true) . $salt);
+  
   $subquery = "GROUP BY mailbox.username";
   if ($mailbox_exists) {
     $subquery = "AND mailbox.username = :mailbox";
@@ -849,7 +854,7 @@ function update_sogo_static_view($mailbox = null) {
         mailbox.username,
         mailbox.domain,
         mailbox.username,
-        SHA2(UUID(), 256),
+        :random_hash,
         mailbox.name,
         mailbox.username,
         IFNULL(GROUP_CONCAT(ga.aliases ORDER BY ga.aliases SEPARATOR ' '), ''),
@@ -880,9 +885,15 @@ function update_sogo_static_view($mailbox = null) {
   
   if ($mailbox_exists) {
     $stmt = $pdo->prepare($query);
-    $stmt->execute(array(':mailbox' => $mailbox));
+    $stmt->execute(array(
+      ':random_hash' => $random_hash,
+      ':mailbox' => $mailbox
+    ));
   } else {
-    $stmt = $pdo->query($query);
+    $stmt = $pdo->prepare($query);
+    $stmt->execute(array(
+      ':random_hash' => $random_hash
+    ));
   }
   
   $stmt = $pdo->query("DELETE FROM _sogo_static_view WHERE `c_uid` NOT IN (SELECT `username` FROM `mailbox` WHERE `active` = '1');");
