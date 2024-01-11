@@ -52,9 +52,9 @@ if (isset($_POST["verify_tfa_login"])) {
     unset($_SESSION['pending_mailcow_cc_role']);
     unset($_SESSION['pending_tfa_methods']);
 
-    $user_details = mailbox("get", "mailbox_details", $_SESSION['pending_mailcow_cc_username']);
+    $user_details = mailbox("get", "mailbox_details", $_SESSION['mailcow_cc_username']);
     if (intval($user_details['attributes']['sogo_access']) == 1) {
-      header("Location: /SOGo/so/{$_SESSION['pending_mailcow_cc_username']}");
+      header("Location: /SOGo/so/{$_SESSION['mailcow_cc_username']}");
       die();
     } else {
       header("Location: /user");
