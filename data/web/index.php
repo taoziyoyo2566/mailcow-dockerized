@@ -30,11 +30,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/inc/header.inc.php';
 $_SESSION['return_to'] = $_SERVER['REQUEST_URI'];
 $_SESSION['index_query_string'] = $_SERVER['QUERY_STRING'];
 
-$has_iam_sso = false;
-$iam_settings = identity_provider("get");
-if (isset($iam_settings['authsource']) && $iam_settings['authsource'] != "ldap"){
-  $has_iam_sso = true;
-}
+$has_iam_sso = identity_provider("get-redirect") ? true : false;
 
 $template = 'index.twig';
 $template_data = [
