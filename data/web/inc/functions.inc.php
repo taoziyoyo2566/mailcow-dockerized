@@ -2129,30 +2129,56 @@ function identity_provider($_action, $_data = null, $_extra = null) {
         return false;
       }
 
-      if ($_data['authsource'] == 'keycloak') {
-        $url = "{$_data['server_url']}/realms/{$_data['realm']}/protocol/openid-connect/token";
-      } else {
-        $url = $_data['token_url'];
+      switch ($_data['authsource']) {
+        case 'keycloak':
+        case 'generic-oidc':
+          if ($_data['authsource'] == 'keycloak') {
+            $url = "{$_data['server_url']}/realms/{$_data['realm']}/protocol/openid-connect/token";
+          } else {
+            $url = $_data['token_url'];
+          }
+          $req = http_build_query(array(
+            'grant_type'    => 'client_credentials',
+            'client_id'     => $_data['client_id'],
+            'client_secret' => $_data['client_secret']
+          ));
+          $curl = curl_init();
+          curl_setopt($curl, CURLOPT_URL, $url);
+          curl_setopt($curl, CURLOPT_TIMEOUT, 7);
+          curl_setopt($curl, CURLOPT_POST, 1);
+          curl_setopt($curl, CURLOPT_POSTFIELDS, $req);
+          curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+          curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+          $res = curl_exec($curl);
+          $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+          curl_close ($curl);
+          
+          if ($code != 200) {
+            return false;
+          }
+        break;
+        case 'ldap':
+          if (!$_data['host'] || !$_data['port'] || !$_data['basedn'] ||
+            !$_data['binddn'] || !$_data['bindpass']){
+              return false;
+          }
+          $provider = new \LdapRecord\Connection([
+            'hosts'                     => [$_data['host']],
+            'port'                      => $_data['port'],
+            'base_dn'                   => $_data['basedn'],
+            'username'                  => $_data['binddn'],
+            'password'                  => $_data['bindpass']
+          ]);
+          try {
+            $provider->connect();
+          } catch (TypeError $e) {
+            return false;
+          } catch (\LdapRecord\Auth\BindException $e) {
+            return false;
+          }
+        break;
       }
-      $req = http_build_query(array(
-        'grant_type'    => 'client_credentials',
-        'client_id'     => $_data['client_id'],
-        'client_secret' => $_data['client_secret']
-      ));
-      $curl = curl_init();
-      curl_setopt($curl, CURLOPT_URL, $url);
-      curl_setopt($curl, CURLOPT_TIMEOUT, 7);
-      curl_setopt($curl, CURLOPT_POST, 1);
-      curl_setopt($curl, CURLOPT_POSTFIELDS, $req);
-      curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-      curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-      $res = curl_exec($curl);
-      $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-      curl_close ($curl);
-      
-      if ($code != 200) {
-        return false;
-      }
+
       return true;
     break;
     case "delete":
@@ -2369,6 +2395,8 @@ function identity_provider($_action, $_data = null, $_extra = null) {
       return true;
     break;
     case "get-redirect":
+      if ($iam_settings['authsource'] !== 'keycloak' || $iam_settings['authsource'] !== 'generic-oidc') 
+        return false;
       $provider = $_data['iam_provider'];
       $authUrl = $provider->getAuthorizationUrl();
       $_SESSION['oauth2state'] = $provider->getState();
