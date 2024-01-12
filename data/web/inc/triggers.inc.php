@@ -4,6 +4,7 @@ if ($iam_provider){
   if (isset($_GET['iam_sso'])){
     // redirect for sso
     $redirect_uri = identity_provider('get-redirect', array('iam_provider' => $iam_provider));
+    $redirect_uri = !empty($redirect_uri) ? $redirect_uri : '/';
     header('Location: ' . $redirect_uri);
     die();
   }
@@ -12,9 +13,9 @@ if ($iam_provider){
     $isRefreshed = identity_provider('refresh-token', array('iam_provider' => $iam_provider));
 
     if (!$isRefreshed){
-      // Session could not be refreshed, clear and redirect to provider
-      clear_session();
+      // Session could not be refreshed, redirect to provider
       $redirect_uri = identity_provider('get-redirect', array('iam_provider' => $iam_provider));
+      $redirect_uri = !empty($redirect_uri) ? $redirect_uri : '/';
       header('Location: ' . $redirect_uri);
       die();
     }
@@ -39,19 +40,7 @@ if (!empty($_GET['sso_token'])) {
 
 if (isset($_POST["verify_tfa_login"])) {
   if (verify_tfa_login($_SESSION['pending_mailcow_cc_username'], $_POST)) {
-    $_SESSION['mailcow_cc_username'] = $_SESSION['pending_mailcow_cc_username'];
-    $_SESSION['mailcow_cc_role'] = $_SESSION['pending_mailcow_cc_role'];
-    $session_var_user_allowed = 'sogo-sso-user-allowed';
-    $session_var_pass = 'sogo-sso-pass';
-    // load master password
-    $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
-    // register username and password in session
-    $_SESSION[$session_var_user_allowed][] = $_SESSION['pending_mailcow_cc_username'];
-    $_SESSION[$session_var_pass] = $sogo_sso_pass;
-    unset($_SESSION['pending_mailcow_cc_username']);
-    unset($_SESSION['pending_mailcow_cc_role']);
-    unset($_SESSION['pending_tfa_methods']);
-
+    set_user_loggedin_session($_SESSION['pending_mailcow_cc_username']);
     $user_details = mailbox("get", "mailbox_details", $_SESSION['mailcow_cc_username']);
     $is_dual = (!empty($_SESSION["dual-login"]["username"])) ? true : false;
     if (intval($user_details['attributes']['sogo_access']) == 1 && !$is_dual) {
@@ -99,8 +88,7 @@ if (isset($_POST["login_user"]) && isset($_POST["pass_user"])) {
 		header("Location: /mailbox");
 	}
 	elseif ($as == "user") {
-		$_SESSION['mailcow_cc_username'] = $login_user;
-		$_SESSION['mailcow_cc_role'] = "user";
+    set_user_loggedin_session($login_user);
     $http_parameters = explode('&', $_SESSION['index_query_string']);
     unset($_SESSION['index_query_string']);
     if (in_array('mobileconfig', $http_parameters)) {
@@ -111,14 +99,6 @@ if (isset($_POST["login_user"]) && isset($_POST["pass_user"])) {
         header("Location: /mobileconfig.php");
         die();
     }
-
-    $session_var_user_allowed = 'sogo-sso-user-allowed';
-    $session_var_pass = 'sogo-sso-pass';
-    // load master password
-    $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
-    // register username and password in session
-    $_SESSION[$session_var_user_allowed][] = $login_user;
-    $_SESSION[$session_var_pass] = $sogo_sso_pass;
 
     $user_details = mailbox("get", "mailbox_details", $login_user);
     $is_dual = (!empty($_SESSION["dual-login"]["username"])) ? true : false;

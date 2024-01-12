@@ -2271,6 +2271,15 @@ function identity_provider($_action, $_data = null, $_extra = null) {
     break;
     case "verify-sso":
       $provider = $_data['iam_provider'];
+      $iam_settings = identity_provider('get');
+      if ($iam_settings['authsource'] != 'keycloak' && $iam_settings['authsource'] != 'generic-oidc'){
+        $_SESSION['return'][] =  array(
+          'type' => 'danger',
+          'log' => array(__FUNCTION__),
+          'msg' => array('login_failed', "no OIDC provider configured")
+        );
+        return false;
+      }
     
       try {
         $token = $provider->getAccessToken('authorization_code', ['code' => $_GET['code']]);
@@ -2300,8 +2309,7 @@ function identity_provider($_action, $_data = null, $_extra = null) {
       $row = $stmt->fetch(PDO::FETCH_ASSOC);
       if ($row){
         // success
-        $_SESSION['mailcow_cc_username'] = $info['email'];
-        $_SESSION['mailcow_cc_role'] = "user";
+        set_user_loggedin_session($info['email']);
         $_SESSION['return'][] =  array(
           'type' => 'success',
           'log' => array(__FUNCTION__, $_SESSION['mailcow_cc_username'], $_SESSION['mailcow_cc_role']),
@@ -2312,9 +2320,8 @@ function identity_provider($_action, $_data = null, $_extra = null) {
 
       // get mapped template, if not set return false
       // also return false if no mappers were defined
-      $provider = identity_provider('get');
       $user_template = $info['mailcow_template'];
-      if (empty($provider['mappers']) || empty($user_template)){
+      if (empty($iam_settings['mappers']) || empty($user_template)){
         clear_session();  
         $_SESSION['return'][] =  array(
           'type' => 'danger',
@@ -2325,7 +2332,7 @@ function identity_provider($_action, $_data = null, $_extra = null) {
       }
 
       // check if matching attribute exist
-      $mapper_key = array_search($user_template, $provider['mappers']);
+      $mapper_key = array_search($user_template, $iam_settings['mappers']);
       if ($mapper_key === false) {
         clear_session();  
         $_SESSION['return'][] =  array(
@@ -2341,8 +2348,8 @@ function identity_provider($_action, $_data = null, $_extra = null) {
         'domain' => explode('@', $info['email'])[1],
         'local_part' => explode('@', $info['email'])[0],
         'name' => $info['firstName'] . " " . $info['lastName'],
-        'authsource' => identity_provider('get')['authsource'],
-        'template' => $provider['templates'][$mapper_key]
+        'authsource' => $iam_settings['authsource'],
+        'template' => $iam_settings['templates'][$mapper_key]
       ));
       if (!$create_res){
         clear_session();  
@@ -2354,8 +2361,7 @@ function identity_provider($_action, $_data = null, $_extra = null) {
         return false;
       }
     
-      $_SESSION['mailcow_cc_username'] = $info['email'];
-      $_SESSION['mailcow_cc_role'] = "user";
+      set_user_loggedin_session($info['email']);
       $_SESSION['return'][] =  array(
         'type' => 'success',
         'log' => array(__FUNCTION__, $_SESSION['mailcow_cc_username'], $_SESSION['mailcow_cc_role']),
@@ -2372,10 +2378,11 @@ function identity_provider($_action, $_data = null, $_extra = null) {
         $_SESSION['iam_refresh_token'] = $token->getRefreshToken();
         $info = $provider->getResourceOwner($token)->toArray();
       } catch (Throwable $e) {
+        clear_session();  
         $_SESSION['return'][] =  array(
           'type' => 'danger',
           'log' => array(__FUNCTION__),
-          'msg' => array('login_failed', $e->getMessage())
+          'msg' => array('refresh_login_failed', $e->getMessage())
         );
         return false;
       }
@@ -2581,6 +2588,16 @@ function clear_session(){
   session_unset();
   session_destroy();
   session_write_close();
+}
+function set_user_loggedin_session($user) {
+  $_SESSION['mailcow_cc_username'] = $user;
+  $_SESSION['mailcow_cc_role'] = 'user';
+  $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
+  $_SESSION['sogo-sso-user-allowed'][] = $user;
+  $_SESSION['sogo-sso-pass'] = $sogo_sso_pass;
+  unset($_SESSION['pending_mailcow_cc_username']);
+  unset($_SESSION['pending_mailcow_cc_role']);
+  unset($_SESSION['pending_tfa_methods']);
 }
 function get_logs($application, $lines = false) {
   if ($lines === false) {
