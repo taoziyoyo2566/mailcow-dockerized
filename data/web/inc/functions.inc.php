@@ -2402,6 +2402,7 @@ function identity_provider($_action, $_data = null, $_extra = null) {
       return true;
     break;
     case "get-redirect":
+      $iam_settings = identity_provider('get');
       if ($iam_settings['authsource'] !== 'keycloak' || $iam_settings['authsource'] !== 'generic-oidc') 
         return false;
       $provider = $_data['iam_provider'];
