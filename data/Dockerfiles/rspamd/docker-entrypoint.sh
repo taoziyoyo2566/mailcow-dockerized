@@ -53,11 +53,9 @@ if [[ ! -z ${RSPAMD_V6} ]]; then
 fi
 
 if [[ ! -z ${REDIS_SLAVEOF_IP} ]]; then
-  cat <<EOF > /etc/rspamd/local.d/redis.conf
-read_servers = "redis:6379";
+  cat <<EOF > /etc/rspamd/override.d/redis.conf
 write_servers = "${REDIS_SLAVEOF_IP}:${REDIS_SLAVEOF_PORT}";
 password = "${REDISPASS}";
-timeout = 10;
 EOF
   until [[ $(redis-cli -h redis-mailcow -a ${REDISPASS} --no-auth-warning PING) == "PONG" ]]; do
     echo "Waiting for Redis @redis-mailcow..."
@@ -69,10 +67,8 @@ EOF
   done
   redis-cli -h redis-mailcow -a ${REDISPASS} --no-auth-warning SLAVEOF ${REDIS_SLAVEOF_IP} ${REDIS_SLAVEOF_PORT}
 else
-  cat <<EOF > /etc/rspamd/local.d/redis.conf
-servers = "redis:6379";
+  cat <<EOF > /etc/rspamd/override.d/redis.conf
 password = "${REDISPASS}";
-timeout = 10;
 EOF
   until [[ $(redis-cli -h redis-mailcow -a ${REDISPASS} --no-auth-warning PING) == "PONG" ]]; do
     echo "Waiting for Redis slave..."
