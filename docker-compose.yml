@@ -116,7 +116,7 @@ services:
             - rspamd
 
     php-fpm-mailcow:
-      image: mailcow/phpfpm:1.92
+      image: mailcow/phpfpm:1.93
       command: "php-fpm -d date.timezone=${TZ} -d expose_php=0"
       depends_on:
         - redis-mailcow
@@ -230,7 +230,7 @@ services:
             - sogo
 
     dovecot-mailcow:
-      image: mailcow/dovecot:2.21
+      image: mailcow/dovecot:2.22
       depends_on:
         - mysql-mailcow
         - netfilter-mailcow
@@ -409,7 +409,7 @@ services:
           condition: service_started
         unbound-mailcow:
           condition: service_healthy
-      image: mailcow/acme:1.91
+      image: mailcow/acme:1.92
       dns:
         - ${IPV4_NETWORK:-172.22.1}.254
       environment:
@@ -467,7 +467,7 @@ services:
         - /lib/modules:/lib/modules:ro
 
     watchdog-mailcow:
-      image: mailcow/watchdog:2.06
+      image: mailcow/watchdog:2.07
       dns:
         - ${IPV4_NETWORK:-172.22.1}.254
       tmpfs:
