@@ -1,10 +1,5 @@
 // redirect to mailcow login form
 document.addEventListener('DOMContentLoaded', function () {
-    var loginForm = document.forms.namedItem("loginForm");
-    if (loginForm) {
-        window.location.href = '/user';
-    }
-
     angularReady = false;
     function observe() {
         angularReady = toolbarExists();

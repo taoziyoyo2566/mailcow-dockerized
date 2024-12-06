@@ -30,7 +30,7 @@ def prepare_template_vars():
     'ADDITIONAL_SERVER_NAMES': os.getenv("ADDITIONAL_SERVER_NAMES", "").replace(',', ' '),
     'HTTP_PORT': os.getenv("HTTP_PORT", "80"),
     'HTTPS_PORT': os.getenv("HTTPS_PORT", "443"),
-    'SOGOHOST': os.getenv("SOGOHOST", "sogo-mailcow"),
+    'SOGOHOST': os.getenv("SOGOHOST", os.getenv("IPV4_NETWORK", "172.22.1") + ".248"),
     'RSPAMDHOST': os.getenv("RSPAMDHOST", "rspamd-mailcow"),
     'PHPFPMHOST': os.getenv("PHPFPMHOST", "php-fpm-mailcow"),
   }
