@@ -517,7 +517,7 @@ IPV6_NETWORK=fd4d:6169:6c63:6f77::/64
 
 # Use this IPv4 for outgoing connections (SNAT)
 
-#SNAT_TO_SOURCE=
+SNAT_TO_SOURCE=${BINDING_IP}
 
 # Use this IPv6 for outgoing connections (SNAT)
 
