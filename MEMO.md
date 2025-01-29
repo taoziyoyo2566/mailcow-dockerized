@@ -19,8 +19,11 @@ Welcome to the Mailcow Dockerized project! This document provides guidelines to 
     open the following link in browse
     http://127.0.0.1:53682/auth?state=wUg4_Ga_jIvwm2zrfdu3gw
     ```
+    sudo visudo
+    spartan ALL=(ALL) NOPASSWD: /opt/docker/mailcow-dockerized/backup_to_gdrive.sh
+    ```
     crontab -e
-    0 3 * * * /opt/docker/mailcow-dockerized/backup_to_gdrive.sh >> /opt/docker/mailcow-dockerized/backup_cron.log 2>&1
+    0 3 * * * sudo /opt/docker/mailcow-dockerized/backup_to_gdrive.sh >> /opt/docker/mailcow-dockerized/backup_cron.log 2>&1
 1. **Clone the Repository**: 
     ```sh
     git clone https://github.com/taoziyoyo2566/mailcow-dockerized.git
