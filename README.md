@@ -43,3 +43,18 @@ mailcow is a registered word mark of The Infrastructure Company GmbH, Parkstr. 4
 The project is managed and maintained by The Infrastructure Company GmbH.
 
 Originated from @andryyy (André)
+
+- rule:
+    name: "General Spam Filter"
+    description: "Intercept emails with common spam characteristics"
+    score: 10.0  # 设置垃圾邮件评分，得分越高越容易被识别为垃圾邮件
+    expression: |
+      (
+        subject =~ /(Free|Winner|Prize|Discount|Urgent|Exclusive|Claim now|Limited time offer)/i  # 检查主题是否包含垃圾邮件特征词
+        || from =~ /(spam@example\.com|example@fake\.com)/i  # 检查发件人是否来自可疑域名
+        || body =~ /(buy now|viagra|loan|credit card|make money|investment|weight loss)/i  # 检查邮件内容是否包含垃圾邮件关键字
+        || header_exists["X-Spam-Flag"] == "YES"  # 如果邮件已有X-Spam-Flag标记
+        || body =~ /(http:\/\/|https:\/\/).*\.ru/  # 检查是否包含可疑链接（例如，来自俄罗斯的链接）
+        || from =~ /.*@.*\.ru/i  # 检查是否来自俄罗斯的邮箱
+      )
+    action: "reject"  # 如果符合规则，则拒绝该邮件
