@@ -1,0 +1,90 @@
+Content-Type: multipart/alternative;
+    boundary="--boundary_text_html"
+
+----boundary_text_html
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+[中文]
+服务器配置更新通知
+
+尊敬的用户：
+
+我们希望通过此邮件通知您，由于系统升级和安全性提升的需要，我们已对服务器进行了重新配置。此次更新包含了重要的性能优化和安全增强措施。
+
+*** 重要提示 ***
+请您在收到此邮件后，尽快登录您的账号查看最新的节点信息。所有用户需要重新登录以确保服务的正常使用。
+
+更新内容：
+* 优化了服务器性能
+* 提升了数据传输的安全性
+* 更新了节点配置信息
+
+如果您在访问过程中遇到任何问题，请随时联系我们的技术支持团队。
+
+感谢您的理解与配合！
+
+此致
+技术运维团队
+
+注：此邮件为系统自动发送，请勿直接回复。如需帮助，请联系技术支持。
+
+----------------------------------------
+
+[English]
+Server Configuration Update Notice
+
+Dear User,
+
+We are writing to inform you that our server has been reconfigured due to system upgrades and security enhancements. This update includes important performance optimizations and security measures.
+
+*** IMPORTANT NOTICE ***
+Please login to your account as soon as possible to view the latest node information. All users need to re-login to ensure normal service usage.
+
+Update Contents:
+* Optimized server performance
+* Enhanced data transmission security
+* Updated node configuration information
+
+If you encounter any issues during access, please feel free to contact our technical support team.
+
+Thank you for your understanding and cooperation!
+
+Best regards,
+Technical Operations Team
+
+Note: This is an automated email, please do not reply directly. For assistance, please contact technical support.
+
+----------------------------------------
+
+[日本語]
+サーバー設定更新のお知らせ
+
+お客様各位
+
+システムのアップグレードとセキュリティ強化のため、サーバーの再設定を実施いたしましたことをお知らせいたします。今回の更新には、重要なパフォーマンスの最適化とセキュリティ強化措置が含まれています。
+
+*** 重要なお知らせ ***
+このメールを受け取られましたら、できるだけ早めにアカウントにログインし、最新のノード情報をご確認ください。すべてのユーザーは、サービスの正常な利用を確保するため、再度ログインする必要があります。
+
+更新内容：
+* サーバーパフォーマンスの最適化
+* データ転送のセキュリティ強化
+* ノード設定情報の更新
+
+アクセスに問題が発生した場合は、お気軽に技術サポートチームまでお問い合わせください。
+
+ご理解とご協力をお願い申し上げます。
+
+敬具
+技術運用チーム
+
+注：これは自動送信メールです。直接返信はご遠慮ください。サポートが必要な場合は、技術サポートまでお問い合わせください。
+
+----boundary_text_html
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+[Previous HTML content goes here]
+
+----boundary_text_html--
