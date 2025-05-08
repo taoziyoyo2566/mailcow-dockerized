@@ -2,6 +2,50 @@
 
 set -o pipefail
 
+# Add help message function
+show_help() {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  --dev, -d            Dev mode, stay on current branch"
+    echo "  --ip, -ip <ip>       Specify IP address for binding services"
+    echo "  -h, --help           Show this help message"
+    echo ""
+    echo "Example:"
+    echo "  $0 -ip 65.75.209.82  Generate config with specific IP binding"
+    echo "  $0                   Generate config with default settings"
+}
+
+# Parse command line arguments
+SKIP_BRANCH=n
+BIND_IP=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dev|-d)
+            SKIP_BRANCH=y
+            shift
+            ;;
+        --ip|-ip)
+            if [[ -n "$2" && ! "$2" =~ ^- ]]; then
+                BIND_IP="$2"
+                shift 2
+            else
+                echo "Error: IP argument is missing"
+                exit 1
+            fi
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
 if [[ "$(uname -r)" =~ ^4\.15\.0-60 ]]; then
   echo "DO NOT RUN mailcow ON THIS UBUNTU KERNEL!";
   echo "Please update to 5.x or use another distribution."
@@ -219,6 +263,14 @@ fi
 
 [ ! -f ./data/conf/rspamd/override.d/worker-controller-password.inc ] && echo '# Placeholder' > ./data/conf/rspamd/override.d/worker-controller-password.inc
 
+# Process BIND_IP for configuration
+if [ -n "${BIND_IP}" ]; then
+    BINDING_IP="${BIND_IP}"
+    echo -e "\e[32mConfiguring services to bind to IP: ${BINDING_IP}\e[0m"
+else
+    BINDING_IP=""
+fi
+
 cat << EOF > mailcow.conf
 # ------------------------------
 # mailcow web ui configuration
@@ -266,10 +318,10 @@ REDISPASS=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c 28)
 # For IPv6 see https://docs.mailcow.email/post_installation/firststeps-ip_bindings/
 
 HTTP_PORT=80
-HTTP_BIND=
+HTTP_BIND=${BINDING_IP}
 
 HTTPS_PORT=443
-HTTPS_BIND=
+HTTPS_BIND=${BINDING_IP}
 
 # Redirect HTTP connections to HTTPS - y/n
 HTTP_REDIRECT=n
@@ -463,7 +515,7 @@ IPV6_NETWORK=fd4d:6169:6c63:6f77::/64
 
 # Use this IPv4 for outgoing connections (SNAT)
 
-#SNAT_TO_SOURCE=
+SNAT_TO_SOURCE=${BINDING_IP}
 
 # Use this IPv6 for outgoing connections (SNAT)
 
